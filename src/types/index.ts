@@ -50,3 +50,15 @@ export interface Goal {
   isPinned: boolean;
   completedCount: number;
 }
+
+export interface DashboardData {
+  period: "week" | "month" | "year";
+  totalIdeas: number;
+  completedCount: number;
+  chartData: { label: string; completed: number }[];
+  ranking: { storeId: number; name: string; color: string; completedCount: number }[];
+  activityData: { date: string; count: number }[];
+  goals: Goal[];
+  dailyGoals: { id: number; scope: string; displayName: string; targetCount: number | null }[];
+  recentActivities: { id: number; description: string; createdAt: string }[];
+}

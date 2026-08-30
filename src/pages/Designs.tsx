@@ -1,10 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import api from "../lib/api";
-import type { Design, Owner } from "../types";
+import type { Design, Owner, Store, Category } from "../types";
 
 
 export default function Designs() {
 
+    const [stores, setStores] = useState<Store[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [storeId, setStoreId] = useState<number | "">("");
+    const [categoryId, setCategoryId] = useState<number | "">("");
     const [designs, setDesigns] = useState<Design[]>([]);
     const [name, setName] = useState("");
     const [owners, setOwners] = useState<Owner[]>([]);
@@ -16,14 +20,17 @@ export default function Designs() {
         setDesigns(res.data);
     }
 
-    useEffect(() => {
-        loadDesigns();
-    }, []);
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
-        await api.post("/designs", { name });
+        await api.post("/designs", {
+            name,
+            storeId: storeId || undefined,
+            categoryId: categoryId || undefined,
+        });
         setName("");
+        setStoreId("");
+        setCategoryId("");
         loadDesigns();
     }
 
@@ -37,10 +44,7 @@ export default function Designs() {
         setOwners(res.data);
     }
 
-    useEffect(() => {
-        loadDesigns();
-        loadOwners();
-    }, []);
+
 
     async function handleToggleComplete(design: Design) {
         if (!design.isCompleted && !design.ownerId) {
@@ -61,11 +65,40 @@ export default function Designs() {
         setPickedOwnerId("");
         loadDesigns();
     }
+
+    async function loadStores() {
+        const res = await api.get<Store[]>("/stores");
+        setStores(res.data);
+    }
+    async function loadCategories() {
+        const res = await api.get<Category[]>("/categories");
+        setCategories(res.data);
+    }
+
+    async function handleAssignStore(designId: number, newStoreId: number) {
+        await api.put(`/designs/${designId}`, { storeId: newStoreId });
+        loadDesigns();
+    }
+    useEffect(() => {
+        loadDesigns();
+        loadOwners();
+        loadStores();
+        loadCategories();
+    }, []);
     return (
         <div>
             <h1>Designs</h1>
             <form onSubmit={handleSubmit}>
                 <input placeholder="Nama ide" value={name} onChange={(e) => setName(e.target.value)} required />
+                <select value={storeId} onChange={(e) => setStoreId(e.target.value ? Number(e.target.value) : "")}>
+                    <option value="">-- store (opsional) --</option>
+                    {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+
+                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}>
+                    <option value="">-- category (opsional) --</option>
+                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
                 <button type="submit">Tambah</button>
             </form>
 
@@ -87,7 +120,19 @@ export default function Designs() {
                                 <button onClick={() => setPendingCompleteId(null)}>Batal</button>
                             </span>
                         )}
-
+                        {d.isCompleted && (
+                            d.storeId ? (
+                                <span> [{d.store?.name}]</span>
+                            ) : (
+                                <select
+                                    value=""
+                                    onChange={(e) => handleAssignStore(d.id, Number(e.target.value))}
+                                >
+                                    <option value="" disabled>⚠ Store belum di-assign</option>
+                                    {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                            )
+                        )}
                         <button onClick={() => handleDelete(d.id)}>Hapus</button>
                     </li>
                 ))}

@@ -38,3 +38,14 @@ export interface Design {
   store?: Store | null;
   category?: Category | null;
 }
+
+export interface Goal {
+  id: number;
+  name: string;
+  scope: "GLOBAL" | "STORE" | "OWNER";
+  storeId: number | null;
+  ownerId: number | null;
+  targetCount: number;
+  isPinned: boolean;
+  completedCount: number;
+}

@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Stores from "./pages/Stores";
 import Categories from "./pages/Categories";
 import Designs from "./pages/Designs";
+import Goals from "./pages/Goals";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/stores" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="/designs" element={<ProtectedRoute><Designs /></ProtectedRoute>} />
+          <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

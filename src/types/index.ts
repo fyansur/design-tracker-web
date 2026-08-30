@@ -24,3 +24,17 @@ export interface Category {
   id: number;
   name: string;
 }
+
+export interface Design {
+  id: number;
+  name: string;
+  ownerId: number | null;
+  storeId: number | null;
+  categoryId: number | null;
+  referenceUrl: string | null;
+  isCompleted: boolean;
+  completedAt: string | null;
+  owner?: Owner | null;
+  store?: Store | null;
+  category?: Category | null;
+}

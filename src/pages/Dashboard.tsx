@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 export default function Dashboard() {
     const { user, logout } = useAuth();
     return (<>
-            <nav>
-                <Link to="/">Dashboard</Link> | <Link to="/stores">Stores</Link>
-            </nav>
+        <nav>
+            <Link to="/">Dashboard</Link> | <Link to="/stores">Stores</Link> | <Link to="/categories">Categories</Link>
+        </nav>
         <div>
             <h1>Dashboard</h1>
             <p>Halo, {user?.name}!</p>

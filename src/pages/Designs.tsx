@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import api from "../lib/api";
-import type { Design, Owner, Store, Category } from "../types";
+import type { Design, Owner, Store, Category, Goal } from "../types";
 
 
 export default function Designs() {
@@ -14,6 +14,7 @@ export default function Designs() {
     const [owners, setOwners] = useState<Owner[]>([]);
     const [pendingCompleteId, setPendingCompleteId] = useState<number | null>(null);
     const [pickedOwnerId, setPickedOwnerId] = useState<number | "">("");
+    const [goals, setGoals] = useState<Goal[]>([]);
 
     async function loadDesigns() {
         const res = await api.get<Design[]>("/designs");
@@ -79,11 +80,26 @@ export default function Designs() {
         await api.put(`/designs/${designId}`, { storeId: newStoreId });
         loadDesigns();
     }
+
+    async function handleAssignGoal(designId: number, goalId: number) {
+        try {
+            await api.post(`/designs/${designId}/goals`, { goalId });
+            loadDesigns();
+        } catch {
+            // 409 kalau udah pernah di-assign — gapapa diabaikan aja
+        }
+    }
+
+    async function handleRemoveGoal(designId: number, goalId: number) {
+        await api.delete(`/designs/${designId}/goals/${goalId}`);
+        loadDesigns();
+    }
     useEffect(() => {
         loadDesigns();
         loadOwners();
         loadStores();
         loadCategories();
+        api.get<Goal[]>("/goals").then((res) => setGoals(res.data));
     }, []);
     return (
         <div>
@@ -132,6 +148,21 @@ export default function Designs() {
                                     {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             )
+                        )}
+                        {d.isCompleted && (
+                            <div style={{ fontSize: "0.85em" }}>
+                                Goals: {d.goals?.map((dg) => (
+                                    <span key={dg.goal.id}>
+                                        {dg.goal.name} <button onClick={() => handleRemoveGoal(d.id, dg.goal.id)}>x</button>
+                                    </span>
+                                ))}
+                                <select value="" onChange={(e) => handleAssignGoal(d.id, Number(e.target.value))}>
+                                    <option value="" disabled>+ assign ke goal</option>
+                                    {goals
+                                        .filter((g) => !d.goals?.some((dg) => dg.goal.id === g.id))
+                                        .map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                </select>
+                            </div>
                         )}
                         <button onClick={() => handleDelete(d.id)}>Hapus</button>
                     </li>

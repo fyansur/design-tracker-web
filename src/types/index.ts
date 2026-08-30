@@ -37,6 +37,7 @@ export interface Design {
   owner?: Owner | null;
   store?: Store | null;
   category?: Category | null;
+  goals?: { goal: Goal }[];
 }
 
 export interface Goal {

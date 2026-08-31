@@ -19,10 +19,9 @@ export function ProgressAside() {
 
 
     useEffect(() => {
-        api.get<DashboardData>("/dashboard?period=week").then((res) => {
-            setData(res.data);
-        }).catch((err) => {
-        });
+        api.get<DashboardData>("/dashboard?period=week").then((res) => setData(res.data));
+        api.get<Store[]>("/stores").then((res) => setStores(res.data));
+        api.get<Owner[]>("/owners").then((res) => setOwners(res.data));
     }, []);
 
     if (!data) return null;
@@ -68,12 +67,7 @@ export function ProgressAside() {
                     {data.dailyGoals.map((dg) => (
                         <div key={dg.id} className="flex items-center justify-between text-sm">
                             <span className="truncate">{dg.displayName ?? dg.scope}</span>
-                            {data.dailyGoals.map((dg) => (
-                                <div key={dg.id} className="flex items-center justify-between text-sm">
-                                    <span className="truncate">{dg.displayName ?? dg.scope}</span>
-                                    <Badge variant="secondary">target: {dg.targetCount ?? "-"}</Badge>
-                                </div>
-                            ))}
+                            <Badge variant="secondary">target: {dg.targetCount ?? "-"}</Badge>
                         </div>
                     ))}
                 </CardContent>

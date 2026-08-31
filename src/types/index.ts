@@ -26,6 +26,8 @@ export interface Goal {
   targetCount: number;
   isPinned: boolean;
   completedCount: number;
+  deadline: string | null;
+  store?: { name: string; color: string } | null;
 }
 
 export interface Design {

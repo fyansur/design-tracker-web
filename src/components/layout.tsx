@@ -47,12 +47,13 @@ export default function Layout() {
     await refreshUser();
   }
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-svh">
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 w-full shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b">
-          <div className="flex items-center px-4 w-full justify-between">
+        <header className="bg-sidebar flex h-16 w-full shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b sticky top-0 z-50">
+          <div className="flex items-center px-4 md:px-8 w-full justify-between">
             <div className="flex items-center">
+              <SidebarTrigger className="block md:hidden"/>
               <Breadcrumb>
                 <BreadcrumbList>
                   {breadcrumbItems.map((item, i) => (
@@ -89,8 +90,8 @@ export default function Layout() {
           </div>
 
         </header>
-        <div className="flex flex-1 flex-row pt-0">
-          <main className="flex-1 min-w-0 p-4">
+        <div className="flex flex-1 flex-row pt-0 overflow-hidden">
+          <main className="flex-1 min-w-0">
             <Outlet />
           </main>
           {!isDashboard &&

@@ -5,46 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { CreateGoalDialog } from "./create-goal-dialog";
+import { CreateDailyGoalDialog } from "./create-daily-goal-dialog";
+import type { Store, Owner, DailyGoalSummary, DashboardData } from "@/types";
 
-interface Goal {
-    id: number;
-    name: string;
-    targetCount: number;
-    completedCount: number;
-}
 
-interface DailyGoal {
-    id: number;
-    scope: string;
-    displayName?: string;
-    achievedToday: number;
-    targets: { targetCount: number; effectiveFrom: string }[];
-}
-
-interface Activity {
-    id: number;
-    description: string;
-    createdAt: string;
-}
-
-interface DashboardStats {
-    totalIdeas: number;
-    completedCount: number;
-    goals: Goal[];
-    dailyGoals: DailyGoal[];
-    recentActivities: Activity[];
-}
 
 export function ProgressAside() {
-    const [stores, setStores] = useState<{ id: number; name: string }[]>([]);
-    const [owners, setOwners] = useState<{ id: number; name: string }[]>([]);
-    const [data, setData] = useState<DashboardStats | null>(null);
+    const [stores, setStores] = useState<Store[]>([]);
+    const [owners, setOwners] = useState<Owner[]>([]);
+    const [data, setData] = useState<DashboardData | null>(null);
 
 
-    
+
 
     useEffect(() => {
-        api.get<DashboardStats>("/dashboard?period=week").then((res) => {
+        api.get<DashboardData>("/dashboard?period=week").then((res) => {
             setData(res.data);
         }).catch((err) => {
         });
@@ -52,7 +27,7 @@ export function ProgressAside() {
 
     if (!data) return null;
     async function load() {
-        const res = await api.get<DashboardStats>("/dashboard?period=week");
+        const res = await api.get<DashboardData>("/dashboard?period=week");
         setData(res.data);
     }
     return (
@@ -84,17 +59,21 @@ export function ProgressAside() {
             </Card>
 
             <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex-row items-center justify-between">
                     <CardTitle className="text-sm">Daily Goals</CardTitle>
+                    <CreateDailyGoalDialog stores={stores} owners={owners} onCreated={load} />
                 </CardHeader>
                 <CardContent className="flex flex-col gap-2">
                     {data.dailyGoals.length === 0 && <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>}
                     {data.dailyGoals.map((dg) => (
                         <div key={dg.id} className="flex items-center justify-between text-sm">
                             <span className="truncate">{dg.displayName ?? dg.scope}</span>
-                            <Badge variant={dg.achievedToday >= (dg.targets[0]?.targetCount ?? 0) ? "default" : "secondary"}>
-                                {dg.achievedToday}/{dg.targets[0]?.targetCount ?? "-"}
-                            </Badge>
+                            {data.dailyGoals.map((dg) => (
+                                <div key={dg.id} className="flex items-center justify-between text-sm">
+                                    <span className="truncate">{dg.displayName ?? dg.scope}</span>
+                                    <Badge variant="secondary">target: {dg.targetCount ?? "-"}</Badge>
+                                </div>
+                            ))}
                         </div>
                     ))}
                 </CardContent>

@@ -1,11 +1,3 @@
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  isOnline?: boolean;
-  monitorToken?: string;
-}
-
 export interface Owner {
   id: number;
   name: string;
@@ -25,6 +17,17 @@ export interface Category {
   name: string;
 }
 
+export interface Goal {
+  id: number;
+  name: string;
+  scope: "GLOBAL" | "STORE" | "OWNER";
+  storeId: number | null;
+  ownerId: number | null;
+  targetCount: number;
+  isPinned: boolean;
+  completedCount: number;
+}
+
 export interface Design {
   id: number;
   name: string;
@@ -40,15 +43,29 @@ export interface Design {
   goals?: { goal: Goal }[];
 }
 
-export interface Goal {
+// Bentuk LENGKAP dari GET /api/daily-goals (ada histori target)
+export interface DailyGoal {
   id: number;
-  name: string;
   scope: "GLOBAL" | "STORE" | "OWNER";
   storeId: number | null;
   ownerId: number | null;
-  targetCount: number;
-  isPinned: boolean;
-  completedCount: number;
+  store?: Store | null;
+  owner?: Owner | null;
+  targets: { targetCount: number; effectiveFrom: string }[];
+}
+
+// Bentuk RINGKAS dari GET /api/dashboard (flat, tanpa histori)
+export interface DailyGoalSummary {
+  id: number;
+  scope: string;
+  displayName: string;
+  targetCount: number | null;
+}
+
+export interface Activity {
+  id: number;
+  description: string;
+  createdAt: string;
 }
 
 export interface DashboardData {
@@ -59,6 +76,14 @@ export interface DashboardData {
   ranking: { storeId: number; name: string; color: string; completedCount: number }[];
   activityData: { date: string; count: number }[];
   goals: Goal[];
-  dailyGoals: { id: number; scope: string; displayName: string; targetCount: number | null }[];
-  recentActivities: { id: number; description: string; createdAt: string }[];
+  dailyGoals: DailyGoalSummary[];
+  recentActivities: Activity[];
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  isOnline?: boolean;
+  monitorToken?: string;
 }

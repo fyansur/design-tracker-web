@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { DashboardData } from "../types";
+import { ModeToggle } from "../components/mode-toggle";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -20,7 +21,7 @@ export default function Dashboard() {
         <Link to="/categories">Categories</Link> | <Link to="/designs">Designs</Link> |{" "}
         <Link to="/goals">Goals</Link>
       </nav>
-
+      <ModeToggle />
       <h1>Dashboard</h1>
       <p>Halo, {user?.name}!</p>
       <button onClick={logout}>Logout</button>

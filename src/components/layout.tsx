@@ -21,7 +21,9 @@ const PAGE_TITLES: Record<string, string> = {
 
 export default function Layout() {
   const location = useLocation();
-  const pageTitle = PAGE_TITLES[location.pathname] ?? "Design Tracker";
+  const pageTitle = location.pathname.startsWith("/stores/")
+    ? "Store Detail"
+    : PAGE_TITLES[location.pathname] ?? "Design Tracker";
   const isDashboard = location.pathname === "/";
   return (
     <SidebarProvider>

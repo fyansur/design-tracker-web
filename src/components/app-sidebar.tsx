@@ -13,12 +13,14 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
+import { Settings as SettingsIcon } from "lucide-react";
 
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/stores", label: "Stores", icon: Store },
   { to: "/designs", label: "Designs", icon: Palette },
   { to: "/trash", label: "Trash", icon: Trash2 },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export function AppSidebar() {

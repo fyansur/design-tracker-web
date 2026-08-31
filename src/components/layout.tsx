@@ -16,7 +16,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/stores": "Stores",
   "/designs": "Designs",
   "/trash": "Trash",
-  "/goals": "Goals"
+  "/goals": "Goals",
+  "/settings": "Settings",
 };
 
 export default function Layout() {

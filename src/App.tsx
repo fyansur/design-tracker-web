@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Stores from "./pages/Stores";
 import Designs from "./pages/Designs";
 import Trash from "./pages/Trash";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               <Route path="/designs" element={<Designs />} />
               <Route path="/trash" element={<Trash />} />
               <Route path="/stores/:id" element={<StoreDetail />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Routes>
         </AuthProvider>

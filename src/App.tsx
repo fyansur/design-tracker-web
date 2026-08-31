@@ -10,7 +10,6 @@ import Dashboard from "./pages/Dashboard";
 import Stores from "./pages/Stores";
 import Designs from "./pages/Designs";
 import Trash from "./pages/Trash";
-import Goals from "./pages/Goals";
 
 function App() {
   return (
@@ -27,7 +26,6 @@ function App() {
               <Route path="/stores" element={<Stores />} />
               <Route path="/designs" element={<Designs />} />
               <Route path="/trash" element={<Trash />} />
-              <Route path="/goals" element={<Goals />} />
             </Route>
           </Routes>
         </AuthProvider>

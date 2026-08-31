@@ -68,7 +68,31 @@ export interface Activity {
   createdAt: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  isOnline?: boolean;
+  monitorToken?: string;
+}
+
+export interface DailyGoalStatus {
+  dailyGoalId: number;
+  scope: string;
+  displayName: string;
+  achieved: boolean;
+}
+
+export interface ActivityBlock {
+  date: string;
+  count: number;
+  isToday: boolean;
+  dailyGoalStatuses: DailyGoalStatus[];
+}
+
 export interface DashboardData {
+  today: { designs: number; completedDesigns: number };
+  totals: { stores: number; owners: number };
   period: "week" | "month" | "year";
   totalIdeas: number;
   completedCount: number;
@@ -78,12 +102,16 @@ export interface DashboardData {
   goals: Goal[];
   dailyGoals: DailyGoalSummary[];
   recentActivities: Activity[];
+  activityBlocks: ActivityBlock[];
+  dailyGoalStats: DailyGoalStat[];
 }
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  isOnline?: boolean;
-  monitorToken?: string;
+export interface DailyGoalStat {
+  dailyGoalId: number;
+  scope: string;
+  displayName: string;
+  targetCount: number | null;
+  achievedToday: number;
+  achievedDays: number;
+  totalDays: number;
 }

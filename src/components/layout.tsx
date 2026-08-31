@@ -1,7 +1,9 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "./app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { ProgressAside } from "./progress-aside";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,7 +11,18 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Dashboard",
+  "/stores": "Stores",
+  "/designs": "Designs",
+  "/trash": "Trash",
+  "/goals": "Goals"
+};
+
 export default function Layout() {
+  const location = useLocation();
+  const pageTitle = PAGE_TITLES[location.pathname] ?? "Design Tracker";
+  const isDashboard = location.pathname === "/";
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -20,8 +33,7 @@ export default function Layout() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                {/* placeholder statis dulu — nanti diganti dinamis per halaman */}
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -32,7 +44,7 @@ export default function Layout() {
             <Outlet />
           </main>
           <aside className="hidden w-72 shrink-0 border-l pl-4 lg:block">
-            <p className="text-sm text-muted-foreground">Progress aside (coming soon)</p>
+            {!isDashboard && <ProgressAside />}
           </aside>
         </div>
       </SidebarInset>

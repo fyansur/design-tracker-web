@@ -9,6 +9,7 @@ export function ModeToggle() {
     <Button
       variant="outline"
       size="icon"
+      className="justify-self-end"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}

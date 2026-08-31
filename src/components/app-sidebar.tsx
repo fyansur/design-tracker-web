@@ -1,68 +1,46 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Store, Palette, Trash2, LogOut } from "lucide-react";
+import type * as React from "react";
+import { LayoutDashboard, Store, Palette, Trash2, Settings } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/context/AuthContext";
-import { Settings as SettingsIcon } from "lucide-react";
-
+import { NavMain } from "@/components/nav-main";
+const DIR_ITEMS = [
+  { title: "Settings", url: "/settings", icon: Settings },
+];
 const NAV_ITEMS = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/stores", label: "Stores", icon: Store },
-  { to: "/designs", label: "Designs", icon: Palette },
-  { to: "/trash", label: "Trash", icon: Trash2 },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Stores", url: "/stores", icon: Store },
+  { title: "Designs", url: "/designs", icon: Palette },
+  { title: "Trash", url: "/trash", icon: Trash2 },
 ];
 
-export function AppSidebar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <span className="px-2 text-sm font-semibold">Design Tracker</span>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton
-                    isActive={location.pathname === item.to}
-                    onClick={() => navigate(item.to)}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout}>
-              <LogOut />
-              <span>Logout ({user?.name})</span>
-            </SidebarMenuButton>
+    <Sidebar collapsible="icon" variant="sidebar" {...props}>
+      <SidebarHeader className="border-b">
+        <SidebarMenu className="group-data-[collapsible=icon]:items-center">
+          <SidebarMenuItem className="p-2 flex justify-between">
+            <div className="items-center justify-center flex group-data-[collapsible=icon]:hidden hover:text-muted-foreground">
+              <div className="grid flex-1 text-left text-sm">
+                <span className="truncate font-medium">Design Tracker</span>
+              </div>
+            </div>
+              <SidebarTrigger className="duration-200 transition-all"/>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarFooter>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={NAV_ITEMS} label={null}/>
+        <NavMain items={DIR_ITEMS} label="Directory" />
+      </SidebarContent>
     </Sidebar>
   );
 }

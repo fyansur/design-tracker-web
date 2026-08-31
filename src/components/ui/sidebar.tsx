@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
@@ -334,7 +332,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 p-2 h-16 justify-center", className)}
       {...props}
     />
   )
@@ -345,7 +343,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 p-2 h-16 justify-center", className)}
       {...props}
     />
   )
@@ -393,6 +391,7 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
 function SidebarGroupLabel({
   className,
   render,
+  children,
   ...props
 }: useRender.ComponentProps<"div"> & React.ComponentProps<"div">) {
   return useRender({
@@ -400,8 +399,19 @@ function SidebarGroupLabel({
     props: mergeProps<"div">(
       {
         className: cn(
-          "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+          "relative flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           className
+        ),
+        children: (
+          <>
+            <span className="opacity-100 transition-opacity duration-150 group-data-[collapsible=icon]:opacity-0">
+              {children}
+            </span>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-2 h-px w-6 -translate-x-1/2 bg-sidebar-foreground/10 opacity-0 transition-opacity duration-150 group-data-[collapsible=icon]:opacity-100 group-data-[collapsible=icon]:delay-350"
+            />
+          </>
         ),
       },
       props
@@ -411,7 +421,7 @@ function SidebarGroupLabel({
       slot: "sidebar-group-label",
       sidebar: "group-label",
     },
-  })
+  });
 }
 
 function SidebarGroupAction({

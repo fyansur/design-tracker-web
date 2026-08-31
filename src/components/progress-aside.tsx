@@ -31,7 +31,7 @@ export function ProgressAside() {
         setData(res.data);
     }
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 py-4">
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm">Quick Stats</CardTitle>

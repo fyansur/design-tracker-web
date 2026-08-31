@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useBreadcrumb } from "@/context/BreadcrumbContext";
 
 interface StoreDetailData {
     store: Store;
@@ -20,11 +21,21 @@ export default function StoreDetail() {
     const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<StoreDetailData | null>(null);
     const [period, setPeriod] = useState<"week" | "month" | "year">("week");
+    const { setBreadcrumb } = useBreadcrumb();
+
     const navigate = useNavigate();
     useEffect(() => {
         api.get<StoreDetailData>(`/stores/${id}?period=${period}`).then((res) => setData(res.data));
     }, [id, period]);
-
+    useEffect(() => {
+        if (data) {
+            setBreadcrumb([
+                { label: "Stores", href: "/stores" },
+                { label: data.store.name },
+            ]);
+        }
+        return () => setBreadcrumb(null); // reset pas pindah halaman
+    }, [data]);
     if (!data) return <p>Loading...</p>;
 
     return (

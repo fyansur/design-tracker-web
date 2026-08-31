@@ -12,26 +12,29 @@ import Stores from "./pages/Stores";
 import Designs from "./pages/Designs";
 import Trash from "./pages/Trash";
 import Settings from "./pages/Settings";
+import { BreadcrumbProvider } from "./context/BreadcrumbContext";
 
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/monitor/:token" element={<Monitor />} />
+          <BreadcrumbProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/monitor/:token" element={<Monitor />} />
 
-            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/stores" element={<Stores />} />
-              <Route path="/designs" element={<Designs />} />
-              <Route path="/trash" element={<Trash />} />
-              <Route path="/stores/:id" element={<StoreDetail />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-          </Routes>
+              <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/stores" element={<Stores />} />
+                <Route path="/designs" element={<Designs />} />
+                <Route path="/trash" element={<Trash />} />
+                <Route path="/stores/:id" element={<StoreDetail />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+            </Routes>
+          </BreadcrumbProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

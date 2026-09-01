@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import StoreDetail from "./pages/StoreDetail";
+import Analytics from "./pages/Analytics";
 import { ThemeProvider } from "./components/theme-provider";
 import { AuthProvider } from "./context/AuthContext"
 import Layout from "./components/layout";
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/trash" element={<Trash />} />
                 <Route path="/stores/:id" element={<StoreDetail />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/analytics" element={<Analytics />} />
               </Route>
             </Routes>
           </BreadcrumbProvider>

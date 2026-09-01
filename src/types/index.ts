@@ -137,3 +137,15 @@ export interface Activity {
   properties: { itemName?: string } | null;
   createdAt: string;
 }
+
+export interface AnalyticsData {
+  period: "week" | "month" | "year";
+  totalIdeas: number;
+  totalIdeasChangePct: number | null;
+  completedCount: number;
+  completedCountChangePct: number | null;
+  chartData: { label: string; completed: number }[];
+  topStores: { id: number; name: string; color: string; count: number }[];
+  topCategories: { id: number; name: string; count: number }[];
+  topOwners: { id: number; name: string; count: number }[];
+}

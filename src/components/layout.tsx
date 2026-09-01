@@ -27,13 +27,14 @@ const PAGE_TITLES: Record<string, string> = {
   "/designs": "Designs",
   "/trash": "Trash",
   "/settings": "Settings",
+  "/analytics": "Analytics",
 };
 
 export default function Layout() {
   const { user, refreshUser } = useAuth();
   const location = useLocation();
   const { items: dynamicItems } = useBreadcrumb();
-  const isDashboard = location.pathname === "/";
+  const hideAside = location.pathname === "/" || location.pathname === "/analytics";
 
   if (!user) return null;
 
@@ -93,8 +94,8 @@ export default function Layout() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
-          {!isDashboard &&
-            <aside className="bg-sidebar hidden w-1/4 shrink-0 overflow-y-auto border-l px-4 lg:block  [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
+          {!hideAside &&
+            <aside className="bg-sidebar hidden w-1/4 shrink-0 overflow-y-auto border-l px-4 lg:block [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
               <ProgressAside />
             </aside>
           }

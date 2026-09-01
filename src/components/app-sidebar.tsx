@@ -1,6 +1,8 @@
 import type * as React from "react";
 import { LayoutDashboard, Store, Palette, Trash2, Settings } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { BarChart3 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +19,7 @@ const DIR_ITEMS = [
 ];
 const NAV_ITEMS = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Stores", url: "/stores", icon: Store },
   { title: "Designs", url: "/designs", icon: Palette },
   { title: "Trash", url: "/trash", icon: Trash2 },

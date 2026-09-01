@@ -52,7 +52,7 @@ export default function Layout() {
         <header className="bg-sidebar flex h-16 w-full shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 border-b sticky top-0 z-50">
           <div className="flex items-center px-4 md:px-8 w-full justify-between">
             <div className="flex items-center">
-              <SidebarTrigger className="block md:hidden"/>
+              <SidebarTrigger className="block md:hidden" />
               <Breadcrumb>
                 <BreadcrumbList>
                   {breadcrumbItems.map((item, i) => (
@@ -89,12 +89,12 @@ export default function Layout() {
           </div>
 
         </header>
-        <div className="flex flex-1 flex-row pt-0 overflow-hidden">
+        <div className="flex flex-1 flex-row pt-0 overflow-hidden scrollbar-none">
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
           {!isDashboard &&
-            <aside className="hidden w-1/4 shrink-0 border-l pl-4 lg:block">
+            <aside className="bg-sidebar hidden w-1/4 shrink-0 overflow-y-auto border-l px-4 lg:block  [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
               <ProgressAside />
             </aside>
           }

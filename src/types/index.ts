@@ -39,6 +39,10 @@ export interface Design {
   referenceUrl: string | null;
   isCompleted: boolean;
   completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  isPinned: boolean;
+  pinnedAt: string | null;
   owner?: Owner | null;
   store?: Store | null;
   category?: Category | null;

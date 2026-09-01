@@ -142,8 +142,7 @@ export default function Dashboard() {
   return (
     <>
       <div className="flex h-full flex-col">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-sidebar">
-
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
           <div className="space-y-4 md:space-y-0 flex flex-col md:grid md:grid-cols-8 md:gap-6">
             <div className="hidden md:block col-span-8">
               <div className="flex scrollbar-none -ml-2 -mr-2">
@@ -251,7 +250,7 @@ export default function Dashboard() {
 
             {/* Daily Goals (kiri) + Goals (kanan), sejajar */}
             <div className="md:col-span-4 flex flex-col gap-6">
-              <span className="text-lg font-semibold text-foreground">Daily Goals</span>
+              <span className="text-lg font-semibold text-foreground">Daily</span>
               <div className="flex flex-col h-72 scroll-fade gap-4 overflow-y-auto pb-2 scrollbar-none">
                 {data.dailyGoalStats.length === 0 && (
                   <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>

@@ -49,21 +49,21 @@ export function CreateStoreDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)}>
-        <Plus className="h-4 w-4" /> Tambah Store
+        <Plus className="h-4 w-4" /> Add Store
       </Button>
 
       <DialogContent>
-        <DialogHeader><DialogTitle>Tambah Store Baru</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Add New Store</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex flex-col gap-2">
-            <Label>Nama Store</Label>
+            <Label>Store Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Warna</Label>
+            <Label>Color</Label>
             <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 w-16 rounded border" />
           </div>
 

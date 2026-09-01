@@ -124,3 +124,12 @@ export interface DailyGoalStat {
   achievedDays: number;
   totalDays: number;
 }
+
+export interface Activity {
+  id: number;
+  description: string;
+  event: string;
+  subjectType: string;
+  properties: { itemName?: string } | null;
+  createdAt: string;
+}

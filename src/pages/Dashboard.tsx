@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 import type { DashboardData, Activity } from "../types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CircleCheck, Palette, Store, UserStar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -142,8 +142,8 @@ export default function Dashboard() {
   return (
     <>
       <div className="flex h-full flex-col">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
-          <div className="space-y-4 md:space-y-0 flex flex-col md:grid md:grid-cols-8 md:gap-6">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
+          <div className="space-y-4 md:space-y-2 flex flex-col md:grid md:grid-cols-8 md:gap-4">
             <div className="hidden md:block col-span-8">
               <div className="flex scrollbar-none -ml-2 -mr-2">
                 {data.activityBlocks.map((b) => {
@@ -176,12 +176,11 @@ export default function Dashboard() {
                 })}
               </div>
             </div>
-            <span className="col-span-8 flex-3 text-lg font-semibold text-foreground leading-none">Today</span>
             <Card className="md:col-span-2">
               <CardContent>
                 <div className="grid grid-cols-12 justify-between ">
                   <div className="col-span-10 flex flex-col justify-between gap-2">
-                    <span className="text-muted-foreground text-base">Ideas</span>
+                    <span className="text-muted-foreground text-base leading-none">Ideas</span>
                     <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
                       {data.today.designs}
                       <ChangeBadge pct={data.today.designsChangePct} />
@@ -199,7 +198,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="grid grid-cols-12 justify-between ">
                   <div className="col-span-10 flex flex-col justify-between gap-2">
-                    <span className="text-muted-foreground text-base">Designs</span>
+                    <span className="text-muted-foreground text-base leading-none">Designs</span>
                     <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
                       {data.today.completedDesigns}
                       <ChangeBadge pct={data.today.completedChangePct} />
@@ -217,7 +216,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="grid grid-cols-12 justify-between ">
                   <div className="col-span-10 flex flex-col justify-between gap-2">
-                    <span className="text-muted-foreground text-base">Stores</span>
+                    <span className="text-muted-foreground text-base leading-none">Stores</span>
                     <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
                       {data.totals.stores}
                     </span>
@@ -234,7 +233,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="grid grid-cols-12 justify-between ">
                   <div className="col-span-10 flex flex-col justify-between gap-2">
-                    <span className="text-muted-foreground text-base">Owners</span>
+                    <span className="text-muted-foreground text-base leading-none">Owners</span>
                     <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
                       {data.totals.owners}
                     </span>
@@ -250,103 +249,117 @@ export default function Dashboard() {
 
             {/* Daily Goals (kiri) + Goals (kanan), sejajar */}
             <div className="md:col-span-4 flex flex-col gap-6">
-              <span className="text-lg font-semibold text-foreground">Daily</span>
-              <div className="flex flex-col h-72 scroll-fade gap-4 overflow-y-auto pb-2 scrollbar-none">
-                {data.dailyGoalStats.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>
-                )}
-                {data.dailyGoalStats.map((s) => {
-                  const Icon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
-                  const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle>Daily Goals</CardTitle>
+                  <CardDescription>Track your daily goals progress.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col h-72 scroll-fade gap-4 overflow-y-auto pb-2 scrollbar-none">
+                    {data.dailyGoalStats.length === 0 && (
+                      <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>
+                    )}
+                    {data.dailyGoalStats.map((s) => {
+                      const Icon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
+                      const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
 
-                  return (
-                    <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg">
-                      <div className={`flex items-center justify-between gap-3 rounded-t-lg bg-card  px-4 py-2`}>
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{s.displayName}</span>
-                          {isAchievedToday && (
-                            <Badge className="bg-chart-2 text-white">Complete</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
-                            <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md">{s.achievedToday}</div>
-                            <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x">/</div>
-                            <InputGroup
-                              className="h-8 w-12 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
-                              <InputGroupInput
-                                min={1}
-                                value={targetDrafts[s.dailyGoalId] ?? String(s.targetCount ?? "")}
-                                onChange={(e) => setTargetDrafts((prev) => ({ ...prev, [s.dailyGoalId]: e.target.value }))}
-                                onBlur={() => handleUpdateDailyGoalTarget(s.dailyGoalId, s.targetCount)}
-                                onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
-                                className="text-center"
-                              />
-                            </InputGroup>
+                      return (
+                        <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg bg-background">
+                          <div className={`flex items-center justify-between gap-3 rounded-t-lg bg-card  px-4 py-2`}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{s.displayName}</span>
+                              {isAchievedToday && (
+                                <Badge className="bg-chart-2 text-white">Complete</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
+                                <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md">{s.achievedToday}</div>
+                                <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x">/</div>
+                                <InputGroup
+                                  className="h-8 w-12 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
+                                  <InputGroupInput
+                                    min={1}
+                                    value={targetDrafts[s.dailyGoalId] ?? String(s.targetCount ?? "")}
+                                    onChange={(e) => setTargetDrafts((prev) => ({ ...prev, [s.dailyGoalId]: e.target.value }))}
+                                    onBlur={() => handleUpdateDailyGoalTarget(s.dailyGoalId, s.targetCount)}
+                                    onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
+                                    className="text-center"
+                                  />
+                                </InputGroup>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-xs flex items-center justify-between p-3">
+                            <p className="text-muted-foreground">
+                              {s.achievedDays}/{s.totalDays} days achieved
+                            </p>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-xs flex items-center justify-between p-3">
-                        <p className="text-muted-foreground">
-                          {s.achievedDays}/{s.totalDays} days achieved
-                        </p>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="md:col-span-4 flex flex-col gap-6">
-              <span className="text-lg font-semibold text-foreground">Goals</span>
-              <div className="flex flex-col gap-4 h-72 overflow-y-auto scroll-fade pb-2 scrollbar-none">
-                {data.goals.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Belum ada goal aktif.</p>
-                )}
-                {[...data.goals]
-                  .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
-                  .map((g) => {
-                    const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
-                    return (
-                      <div key={g.id} className="flex w-full shrink-0 flex-col border rounded-lg">
-                        <div className="flex items-center justify-between gap-3 px-4 py-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {g.store ? (
-                              <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
-                            ) : g.scope === "OWNER" ? (
-                              <User className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <Globe className="h-4 w-4 text-muted-foreground" />
-                            )}
-                            <span className="text-sm font-medium truncate">{g.name}</span>
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle>Campaign</CardTitle>
+                  <CardDescription>Track your campaign progress.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-4 h-72 overflow-y-auto scroll-fade pb-2 scrollbar-none">
+                    {data.goals.length === 0 && (
+                      <p className="text-sm text-muted-foreground">Belum ada goal aktif.</p>
+                    )}
+                    {[...data.goals]
+                      .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
+                      .map((g) => {
+                        const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
+                        return (
+                          <div key={g.id} className="flex w-full shrink-0 flex-col border rounded-lg">
+                            <div className="flex items-center justify-between gap-3 px-4 py-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                {g.store ? (
+                                  <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
+                                ) : g.scope === "OWNER" ? (
+                                  <User className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Globe className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                <span className="text-sm font-medium truncate">{g.name}</span>
+                              </div>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleTogglePinGoal(g.id)}>
+                                <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
+                              </Button>
+                            </div>
+                            <div className="flex items-center gap-3 border-y bg-card px-4 py-3">
+                              <CircularProgress percent={percent} />
+                              <span className="text-sm font-medium">{g.completedCount} / {g.targetCount}</span>
+                            </div>
+                            <div className="flex items-center justify-between px-4 py-2">
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Calendar className="h-3.5 w-3.5" />
+                                {g.deadline
+                                  ? new Date(g.deadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+                                  : "No deadline"}
+                              </div>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteGoal(g.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleTogglePinGoal(g.id)}>
-                            <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
-                          </Button>
-                        </div>
-                        <div className="flex items-center gap-3 border-y bg-card px-4 py-3">
-                          <CircularProgress percent={percent} />
-                          <span className="text-sm font-medium">{g.completedCount} / {g.targetCount}</span>
-                        </div>
-                        <div className="flex items-center justify-between px-4 py-2">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {g.deadline
-                              ? new Date(g.deadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
-                              : "No deadline"}
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteGoal(g.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
+                        );
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
             <Separator className="col-span-8" />
             {/* Overview: Tabs + period stats + Chart, sekarang full width karena Daily Goals/Goals udah gak nempel di sampingnya */}

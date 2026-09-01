@@ -27,7 +27,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" variant="sidebar" {...props}>
       <SidebarHeader className="border-b">
         <SidebarMenu className="group-data-[collapsible=icon]:items-center">
-          <SidebarMenuItem className="p-2 flex justify-between">
+          <SidebarMenuItem className="p-4 flex justify-between">
             <div className="items-center justify-center flex group-data-[collapsible=icon]:hidden hover:text-muted-foreground">
               <div className="grid flex-1 text-left text-sm">
                 <span className="truncate font-medium">Design Tracker</span>

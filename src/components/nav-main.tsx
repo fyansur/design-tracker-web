@@ -19,7 +19,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      {label !== null && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+      {label !== null && <SidebarGroupLabel className="uppercase tracking-[0.2em] text-[0.6rem]">{label}</SidebarGroupLabel>}
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

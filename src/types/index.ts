@@ -82,7 +82,7 @@ export interface DailyGoalStatus {
   dailyGoalId: number;
   scope: string;
   displayName: string;
-  achieved: boolean;
+  status: "achieved" | "missed" | "no-target";
 }
 
 export interface ActivityBlock {
@@ -93,11 +93,18 @@ export interface ActivityBlock {
 }
 
 export interface DashboardData {
-  today: { designs: number; completedDesigns: number };
+  today: {
+    designs: number;
+    completedDesigns: number;
+    designsChangePct: number | null;
+    completedChangePct: number | null;
+  };
+  totalIdeas: number;
+  totalIdeasChangePct: number | null;
+  completedCount: number;
+  completedCountChangePct: number | null;
   totals: { stores: number; owners: number };
   period: "week" | "month" | "year";
-  totalIdeas: number;
-  completedCount: number;
   chartData: { label: string; completed: number }[];
   ranking: { storeId: number; name: string; color: string; completedCount: number }[];
   activityData: { date: string; count: number }[];

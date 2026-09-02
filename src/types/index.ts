@@ -28,6 +28,7 @@ export interface Goal {
   completedCount: number;
   deadline: string | null;
   store?: { name: string; color: string } | null;
+  createdAt: string; // <-- tambahin
 }
 
 export interface Design {

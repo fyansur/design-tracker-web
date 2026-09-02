@@ -121,20 +121,20 @@ function ChangeBadge({ pct }: { pct: number | null }) {
 
 
 function CircularProgress({ percent }: { percent: number }) {
-  const radius = 18;
+  const radius = 34; // sebelumnya 26
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percent / 100) * circumference;
   return (
-    <div className="relative h-12 w-12">
-      <svg viewBox="0 0 48 48" className="h-12 w-12 -rotate-90">
-        <circle cx="24" cy="24" r={radius} fill="none" stroke="var(--muted)" strokeWidth="4" />
+    <div className="relative h-20 w-20 shrink-0"> {/* sebelumnya h-16 w-16 */}
+      <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90"> {/* sebelumnya viewBox 0 0 64 64, h-16 w-16 */}
+        <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--muted)" strokeWidth="6" /> {/* cx/cy ikut naik jadi setengah dari viewBox */}
         <circle
-          cx="24" cy="24" r={radius} fill="none"
-          stroke="var(--chart-2)" strokeWidth="4" strokeLinecap="round"
+          cx="40" cy="40" r={radius} fill="none"
+          stroke="var(--chart-2)" strokeWidth="6" strokeLinecap="round"
           strokeDasharray={circumference} strokeDashoffset={offset}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium">{percent}%</span>
+      <span className="absolute inset-0 flex items-center justify-center text-base font-bold">{percent}%</span>
     </div>
   );
 }
@@ -187,7 +187,7 @@ export default function Dashboard() {
     const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
     return (
       <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg bg-background">
-        <div className="flex items-center justify-between gap-3 rounded-t-lg bg-card px-4 py-2">
+        <div className="flex items-center justify-between gap-3 rounded-t-lg bg-card px-6 py-2">
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg">
@@ -195,13 +195,30 @@ export default function Dashboard() {
               <span className="text-xs font-medium truncate">{scopeLabel}</span>
             </div>
             {s.scope !== "GLOBAL" && (
-              <div style={{ backgroundColor: s.scope === "STORE" ? s.store?.color : undefined }} className={`text-xs flex items-center gap-2 min-w-0 ${s.scope === "STORE" ? "p-1.5 px-3 rounded-lg" : s.scope === "OWNER" ? "p-1.5 px-3 text-cyan-500 rounded-lg" : ""}`}>{s.displayName}</div>
+              <div
+                style={{
+                  backgroundColor: s.scope === "STORE" ? `color-mix(in srgb, ${s.store?.color} 30%, transparent)` : undefined,
+                  color: s.scope === "STORE" ? s.store?.color : undefined,
+                }}
+                className={`text-xs flex items-center gap-2 min-w-0 p-1.5 px-3 rounded-lg ${s.scope === "OWNER" ? "bg-cyan-500/10 text-cyan-500" : ""
+                  }`}
+              >
+                {s.displayName}
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2">
+
+            {isAchievedToday &&
+              <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg text-xs"><CircleCheck className="h-4 w-4" />Complete
+              </div>}
+          </div>
+        </div>
+        <div className="text-xs flex items-center justify-between p-6">
+          <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
-              <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md">{s.achievedToday}</div>
-              <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x">/</div>
+              <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md font-black">{s.achievedToday}</div>
+              <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x bg-card">/</div>
               <InputGroup className="h-8 w-12 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
                 <InputGroupInput
                   min={1}
@@ -209,15 +226,11 @@ export default function Dashboard() {
                   onChange={(e) => setTargetDrafts((prev) => ({ ...prev, [s.dailyGoalId]: e.target.value }))}
                   onBlur={() => handleUpdateDailyGoalTarget(s.dailyGoalId, s.targetCount)}
                   onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
-                  className="text-center"
+                  className="text-center font-black"
                 />
               </InputGroup>
             </div>
           </div>
-        </div>
-        <div className="text-xs flex items-center justify-between p-4">
-
-          {isAchievedToday && <Badge className="bg-chart-2 text-white rounded-sm!">Complete</Badge>}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -230,42 +243,79 @@ export default function Dashboard() {
     .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
     .map((g) => {
       const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
-      const scopeLabel = g.store ? "Store Campaign" : g.scope === "OWNER" ? "Owner Campaign" : "Global Campaign";
-      const ScopeIcon = g.store ? Store : g.scope === "OWNER" ? User : Globe;
+      const remaining = Math.max(g.targetCount - g.completedCount, 0);
 
-      let daysLeftLabel: string | null = null;
+      const daysElapsed = Math.max(1, Math.floor((Date.now() - new Date(g.createdAt).getTime()) / 86400000));
+      const actualPace = g.completedCount / daysElapsed;
+
+      let daysLeft: number | null = null;
+      let onTrack: boolean | null = null;
       if (g.deadline) {
-        const diffDays = Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-        daysLeftLabel = diffDays < 0 ? "Overdue" : diffDays === 0 ? "Due today" : `${diffDays} days left`;
+        daysLeft = Math.ceil((new Date(g.deadline).getTime() - Date.now()) / 86400000);
+        if (remaining <= 0) onTrack = true;
+        else if (daysLeft <= 0) onTrack = false;
+        else onTrack = actualPace >= remaining / daysLeft;
       }
+
+      const scopeLabel = `${g.scope} CAMPAIGN`;
+      const ScopeIcon = g.scope === "STORE" ? Store : g.scope === "OWNER" ? User : Globe;
+
       return (
-        <div key={g.id} className="flex w-full shrink-0 flex-col border rounded-lg">
-          <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg">
-                <ScopeIcon className="h-4 w-4" />
-                <span className="text-xs font-medium truncate">{scopeLabel}</span>
+        <div key={g.id} className="relative flex flex-col gap-4 overflow-hidden rounded-xl border p-6 bg-card">
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+                <ScopeIcon className="h-5 w-5" />
               </div>
-              <span className="text-sm font-medium truncate">/ {g.name}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-semibold tracking-wide text-chart-2">{scopeLabel}</span>
+                <span className="text-sm font-semibold truncate">{g.name}</span>
+              </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleTogglePinGoal(g.id)}>
-              <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
-            </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              {percent >= 100 && (
+                <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg text-xs"><CircleCheck className="h-4 w-4" />Success
+                </div>
+              )}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleTogglePinGoal(g.id)}>
+                <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDeleteGoal(g.id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3 border-y bg-card px-4 py-3">
+
+          <div className="flex items-center gap-4 rounded-lg border bg-background p-4">
             <CircularProgress percent={percent} />
-            <span className="text-sm font-medium">{g.completedCount} / {g.targetCount}</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              {g.deadline
-                ? new Date(g.deadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
-                : "No deadline"}
+            <div className="flex flex-1 flex-col gap-1.5 min-w-0">
+              <span className="text-sm">
+                <span className="text-xl font-bold text-chart-2 leading-none">{g.completedCount}</span>
+                <span className="text-muted-foreground"> / {g.targetCount} designs</span>
+              </span>
+              <div className="h-1.5 w-full rounded-full bg-muted">
+                <div className="h-1.5 rounded-full bg-chart-2" style={{ width: `${Math.min(percent, 100)}%` }} />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground/50">{remaining} remaining</span>
+              </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteGoal(g.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          </div>
+
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-chart-2 animate-pulse" />
+              {g.deadline ? (
+                <>
+                  Due {new Date(g.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  {daysLeft !== null && <> · {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today" : "Overdue"}</>}
+                </>
+              ) : (
+                "Lifetime"
+              )}
+            </div>
+            <Badge variant="secondary" className="font-normal text-muted-foreground">{actualPace.toFixed(1)} designs/day</Badge>
           </div>
         </div>
       );

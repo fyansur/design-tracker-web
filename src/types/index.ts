@@ -146,6 +146,7 @@ export interface DashboardData {
   period: "week" | "month" | "year";
   chartData: { label: string; completed: number }[];
   ranking: { storeId: number; name: string; color: string; completedCount: number }[];
+  rankingByOwner: { ownerId: number; name: string; completedCount: number }[];
   activityData: { date: string; count: number }[];
   goals: Goal[];
   dailyGoals: DailyGoalSummary[];

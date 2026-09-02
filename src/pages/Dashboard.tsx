@@ -11,9 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TrendingUp, TrendingDown, ArchiveRestore } from "lucide-react";
 import { SimpleCarousel } from "@/components/simple-carousel";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SCOPE_ICON = { GLOBAL: Globe, STORE: Store, OWNER: User } as const;
-
+const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 const STATUS_COLOR = {
   achieved: "bg-blue-500",
   missed: "bg-muted-foreground/40",
@@ -140,6 +141,7 @@ function CircularProgress({ percent }: { percent: number }) {
 }
 
 export default function Dashboard() {
+  const [distributionTab, setDistributionTab] = useState<"store" | "owner">("store");
   const [data, setData] = useState<DashboardData | null>(null);
   const [targetDrafts, setTargetDrafts] = useState<Record<number, string>>({});
 
@@ -182,58 +184,53 @@ export default function Dashboard() {
   if (!data) return <p>Loading...</p>;
 
   const dailyGoalItems = data.dailyGoalStats.map((s) => {
-    const scopeLabel = s.scope === "STORE" ? "Store Daily" : s.scope === "OWNER" ? "Owner Daily" : "Global Daily";
+    const scopeLabel = `${s.scope} DAILY`;
     const ScopeIcon = s.scope === "STORE" ? Store : s.scope === "OWNER" ? User : Globe;
     const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
+    const todayPercent = s.targetCount ? Math.round((s.achievedToday / s.targetCount) * 100) : 0;
+    const remaining = s.targetCount !== null ? Math.max(s.targetCount - s.achievedToday, 0) : null;
+
     return (
-      <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg bg-background">
-        <div className="flex items-center justify-between gap-3 rounded-t-lg bg-card px-6 py-2">
+      <div key={s.dailyGoalId} className="relative flex flex-col gap-4 overflow-hidden rounded-xl border p-6 bg-card">
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg">
-              <ScopeIcon className="h-4 w-4" />
-              <span className="text-xs font-medium truncate">{scopeLabel}</span>
+        <div className="grid grid-cols-3 items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+              <ScopeIcon className="h-5 w-5" />
             </div>
-            {s.scope !== "GLOBAL" && (
-              <div
-                style={{
-                  backgroundColor: s.scope === "STORE" ? `color-mix(in srgb, ${s.store?.color} 30%, transparent)` : undefined,
-                  color: s.scope === "STORE" ? s.store?.color : undefined,
-                }}
-                className={`text-xs flex items-center gap-2 min-w-0 p-1.5 px-3 rounded-lg ${s.scope === "OWNER" ? "bg-cyan-500/10 text-cyan-500" : ""
-                  }`}
-              >
-                {s.displayName}
-              </div>
-            )}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] font-semibold tracking-wide text-chart-2">{scopeLabel}</span>
+              {s.scope !== "GLOBAL" && (
+                <span className="text-sm font-semibold truncate">{s.displayName}</span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-
-            {isAchievedToday &&
-              <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg text-xs"><CircleCheck className="h-4 w-4" />Complete
-              </div>}
-          </div>
-        </div>
-        <div className="text-xs flex items-center justify-between p-6">
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0 justify-center">
             <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
-              <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md font-black">{s.achievedToday}</div>
-              <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x bg-card">/</div>
-              <InputGroup className="h-8 w-12 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
+              <div className="h-8 w-10 text-sm flex items-center px-2 py-1 justify-center rounded-l-md">{s.achievedToday}</div>
+              <div className="h-8 w-6 text-sm flex items-center justify-center border-x">/</div>
+              <InputGroup className="h-8 w-10 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
                 <InputGroupInput
                   min={1}
                   value={targetDrafts[s.dailyGoalId] ?? String(s.targetCount ?? "")}
                   onChange={(e) => setTargetDrafts((prev) => ({ ...prev, [s.dailyGoalId]: e.target.value }))}
                   onBlur={() => handleUpdateDailyGoalTarget(s.dailyGoalId, s.targetCount)}
                   onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
-                  className="text-center font-black"
+                  className="text-center px-1"
                 />
               </InputGroup>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-3 shrink-0 justify-end">
+            {isAchievedToday && (
+              <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg text-xs">
+                <CircleCheck className="h-4 w-4" />Complete
+              </div>
+            )}
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -457,62 +454,76 @@ export default function Dashboard() {
 
               {/* Pie chart */}
               <Card className="h-fit">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle>Designs Distribution</CardTitle>
-                  <CardDescription>Distribution of completed designs across stores.</CardDescription>
+                  <Tabs value={distributionTab} onValueChange={(v) => v && setDistributionTab(v as typeof distributionTab)}>
+                    <TabsList>
+                      <TabsTrigger value="store">Store</TabsTrigger>
+                      <TabsTrigger value="owner">Owner</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 </CardHeader>
                 <CardContent>
-                  {data.ranking.length === 0 || data.completedCount === 0 ? (
-                    <p className="text-sm text-muted-foreground">Belum ada data.</p>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-40 w-40 shrink-0">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={data.ranking}
-                              dataKey="completedCount"
-                              nameKey="name"
-                              innerRadius={55}
-                              outerRadius={75}
-                              paddingAngle={2}
-                              stroke="none"
-                            >
-                              {data.ranking.map((r) => (
-                                <Cell key={r.storeId} fill={r.color} />
-                              ))}
-                            </Pie>
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: "var(--popover)",
-                                border: "1px solid var(--border)",
-                                borderRadius: "8px",
-                                fontSize: "12px",
-                              }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-2xl font-bold text-foreground">{data.completedCount}</span>
-                          <span className="text-xs text-muted-foreground">Designs</span>
+                  {(() => {
+                    const items =
+                      distributionTab === "store"
+                        ? data.ranking.map((r) => ({ key: r.storeId, name: r.name, count: r.completedCount, color: r.color }))
+                        : data.rankingByOwner.map((o, i) => ({ key: o.ownerId, name: o.name, count: o.completedCount, color: OWNER_COLORS[i % OWNER_COLORS.length] }));
+
+                    if (items.length === 0 || data.completedCount === 0) {
+                      return <p className="text-sm text-muted-foreground">Belum ada data.</p>;
+                    }
+
+                    return (
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-40 w-40 shrink-0">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={items}
+                                dataKey="count"
+                                nameKey="name"
+                                innerRadius={55}
+                                outerRadius={75}
+                                paddingAngle={2}
+                                stroke="none"
+                              >
+                                {items.map((item) => (
+                                  <Cell key={item.key} fill={item.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: "var(--popover)",
+                                  border: "1px solid var(--border)",
+                                  borderRadius: "8px",
+                                  fontSize: "12px",
+                                }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-bold text-foreground">{data.completedCount}</span>
+                            <span className="text-xs text-muted-foreground">Designs</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-1 flex-col gap-2 min-w-0">
+                          {items.map((item) => {
+                            const pct = Math.round((item.count / data.completedCount) * 100);
+                            return (
+                              <div key={item.key} className="flex items-center justify-between gap-2 text-sm">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                                  <span className="truncate">{item.name}</span>
+                                </div>
+                                <span className="font-medium">{pct}%</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div className="flex flex-1 flex-col gap-2 min-w-0">
-                        {data.ranking.map((r) => {
-                          const pct = Math.round((r.completedCount / data.completedCount) * 100);
-                          return (
-                            <div key={r.storeId} className="flex items-center justify-between gap-2 text-sm">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />
-                                <span className="truncate">{r.name}</span>
-                              </div>
-                              <span className="font-medium">{pct}%</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>

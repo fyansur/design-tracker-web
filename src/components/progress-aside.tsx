@@ -2,26 +2,69 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { CreateGoalDialog } from "./create-goal-dialog";
 import { CreateDailyGoalDialog } from "./create-daily-goal-dialog";
-import { Pin, Calendar, Trash2, Globe, Store as StoreIcon, User, Plus, Clock, CircleCheck, Pencil } from "lucide-react";
+import {
+  Pin, Calendar, Trash2, Globe, Store as StoreIcon, User, Plus, Clock,
+  CircleCheck, Pencil, ArchiveRestore,
+} from "lucide-react";
 import type { Store, Owner, DashboardData, Activity } from "@/types";
 
 const SCOPE_ICON = { GLOBAL: Globe, STORE: StoreIcon, OWNER: User } as const;
 
-const EVENT_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  created: { icon: Plus, color: "text-blue-500 bg-blue-500/10", label: "New design added" },
-  completed: { icon: CircleCheck, color: "text-green-500 bg-green-500/10", label: "Design completed 🎉" },
-  pending: { icon: Clock, color: "text-yellow-500 bg-yellow-500/10", label: "Marked as pending" },
-  updated: { icon: Pencil, color: "text-muted-foreground bg-muted", label: "Design updated" },
-  deleted: { icon: Trash2, color: "text-red-500 bg-red-500/10", label: "Design deleted" },
+const EVENT_ICON: Record<string, any> = {
+  created: Plus,
+  completed: CircleCheck,
+  pending: Clock,
+  updated: Pencil,
+  deleted: Trash2,
+  recovered: ArchiveRestore,
 };
 
-function getActivityConfig(a: Activity) {
-  return EVENT_CONFIG[a.event] ?? { icon: Pencil, color: "text-muted-foreground bg-muted", label: a.event };
+const EVENT_COLOR: Record<string, string> = {
+  created: "text-blue-500 bg-blue-500/10",
+  completed: "text-green-500 bg-green-500/10",
+  pending: "text-yellow-500 bg-yellow-500/10",
+  updated: "text-muted-foreground bg-muted",
+  deleted: "text-red-500 bg-red-500/10",
+  recovered: "text-purple-500 bg-purple-500/10",
+};
+
+const SUBJECT_LABEL: Record<string, string> = {
+  Design: "idea",
+  Store: "store",
+  Owner: "owner",
+};
+
+function getActivityTitle(a: Activity): string {
+  const subjectLabel = SUBJECT_LABEL[a.subjectType] ?? a.subjectType.toLowerCase();
+  const capitalized = subjectLabel.charAt(0).toUpperCase() + subjectLabel.slice(1);
+  switch (a.event) {
+    case "created": return `New ${subjectLabel} added`;
+    case "completed": return `${capitalized} completed`;
+    case "pending": return `${capitalized} marked as pending`;
+    case "updated": return `${capitalized} updated`;
+    case "deleted": return `${capitalized} deleted`;
+    case "recovered": return `${capitalized} restored`;
+    default: return a.event;
+  }
+}
+
+function getActivityDescription(a: Activity) {
+  const name = a.properties?.itemName ?? "Untitled";
+  const subjectLabel = SUBJECT_LABEL[a.subjectType] ?? a.subjectType.toLowerCase();
+  const bold = <span className="font-semibold text-foreground">{name}</span>;
+  switch (a.event) {
+    case "created": return <>Added a new {subjectLabel} called {bold}.</>;
+    case "completed": return <>Marked {bold} as complete.</>;
+    case "pending": return <>Moved {bold} back to pending.</>;
+    case "updated": return <>Updated the {subjectLabel} {bold}.</>;
+    case "deleted": return <>Deleted the {subjectLabel} {bold}.</>;
+    case "recovered": return <>Restored the {subjectLabel} {bold} from trash.</>;
+    default: return a.description;
+  }
 }
 
 function timeAgo(dateStr: string): string {
@@ -127,17 +170,31 @@ export function ProgressAside() {
             </Empty>
           )}
           {data.dailyGoalStats.map((s) => {
-            const Icon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
+            const ScopeIcon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
             const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
+            const percent = s.targetCount ? Math.min(Math.round((s.achievedToday / s.targetCount) * 100), 100) : 0;
             return (
               <div key={s.dailyGoalId} className="flex flex-col border rounded-lg">
-                <div className="flex items-center justify-between gap-2 rounded-t-lg bg-card px-3 py-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span className="text-xs truncate">{s.displayName}</span>
-                    {isAchievedToday && <Badge className="bg-chart-2 text-white text-[10px] px-1.5">✓</Badge>}
+                <div className="flex flex-col gap-1.5 rounded-t-lg bg-card px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 min-w-0 bg-chart-2/30 px-2 py-1 text-chart-2 rounded-md">
+                      <ScopeIcon className="h-3 w-3 shrink-0" />
+                      <span className="text-[10px] font-medium truncate">{s.scope}</span>
+                    </div>
+                    {isAchievedToday && <Badge className="bg-chart-2 text-white text-[10px] px-1.5 shrink-0">✓</Badge>}
                   </div>
-                  <div className="flex items-center rounded-md ring ring-foreground/10 shrink-0">
+                  {s.scope !== "GLOBAL" && (
+                    <span
+                      style={{ color: s.scope === "STORE" ? s.store?.color : undefined }}
+                      className={`text-xs font-medium truncate ${s.scope === "OWNER" ? "text-cyan-500" : ""}`}
+                    >
+                      {s.displayName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 border-y bg-background px-3 py-2">
+                  <CircularProgress percent={percent} />
+                  <div className="flex items-center rounded-md ring ring-foreground/10">
                     <div className="h-7 w-8 text-xs flex items-center justify-center">{s.achievedToday}</div>
                     <div className="h-7 w-5 text-xs flex items-center justify-center border-x">/</div>
                     <InputGroup className="h-7 w-9 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
@@ -164,10 +221,10 @@ export function ProgressAside() {
         </div>
       </div>
 
-      {/* Goals */}
+      {/* Campaigns */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-foreground">Goals</span>
+          <span className="text-sm font-semibold text-foreground">Campaigns</span>
           <CreateGoalDialog stores={stores} owners={owners} onCreated={load} />
         </div>
         <div className="flex flex-col gap-3">
@@ -175,7 +232,7 @@ export function ProgressAside() {
             <Empty className="py-6">
               <EmptyHeader>
                 <EmptyMedia variant="icon"><Pin /></EmptyMedia>
-                <EmptyTitle className="text-sm">Belum ada goal aktif</EmptyTitle>
+                <EmptyTitle className="text-sm">Belum ada campaign aktif</EmptyTitle>
               </EmptyHeader>
             </Empty>
           )}
@@ -183,18 +240,18 @@ export function ProgressAside() {
             .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
             .map((g) => {
               const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
+              const ScopeIcon = g.scope === "OWNER" ? User : Globe;
               return (
                 <div key={g.id} className="flex flex-col border rounded-lg">
                   <div className="flex items-center justify-between gap-2 px-3 py-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       {g.store ? (
                         <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
-                      ) : g.scope === "OWNER" ? (
-                        <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       ) : (
-                        <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <ScopeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       )}
                       <span className="text-xs font-medium truncate">{g.name}</span>
+                      {percent >= 100 && <Badge className="bg-chart-2 text-white text-[10px] px-1.5 shrink-0">✓</Badge>}
                     </div>
                     <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleTogglePinGoal(g.id)}>
                       <Pin className={`h-3.5 w-3.5 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
@@ -221,7 +278,7 @@ export function ProgressAside() {
         </div>
       </div>
 
-      {/* Activity Feed */}
+      {/* Recent Activity */}
       <div className="flex flex-col gap-2">
         <span className="text-sm font-semibold text-foreground">Recent Activity</span>
         {data.recentActivities.length === 0 ? (
@@ -234,17 +291,16 @@ export function ProgressAside() {
         ) : (
           <div className="flex flex-col gap-3">
             {data.recentActivities.map((a) => {
-              const config = getActivityConfig(a);
-              const Icon = config.icon;
-              const itemName = a.properties?.itemName ?? "Untitled";
+              const Icon = EVENT_ICON[a.event] ?? Pencil;
+              const color = EVENT_COLOR[a.event] ?? "text-muted-foreground bg-muted";
               return (
                 <div key={a.id} className="flex items-start gap-2">
-                  <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${config.color}`}>
+                  <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${color}`}>
                     <Icon className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-xs font-semibold text-foreground truncate">{itemName}</span>
-                    <span className="text-xs text-muted-foreground">{config.label}</span>
+                    <span className="text-xs font-semibold text-foreground truncate">{getActivityTitle(a)}</span>
+                    <span className="text-xs text-muted-foreground">{getActivityDescription(a)}</span>
                     <span className="text-[10px] text-muted-foreground">{timeAgo(a.createdAt)}</span>
                   </div>
                 </div>

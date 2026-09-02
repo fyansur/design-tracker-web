@@ -96,29 +96,6 @@ export interface ActivityBlock {
   dailyGoalStatuses: DailyGoalStatus[];
 }
 
-export interface DashboardData {
-  today: {
-    designs: number;
-    completedDesigns: number;
-    designsChangePct: number | null;
-    completedChangePct: number | null;
-  };
-  totalIdeas: number;
-  totalIdeasChangePct: number | null;
-  completedCount: number;
-  completedCountChangePct: number | null;
-  totals: { stores: number; owners: number };
-  period: "week" | "month" | "year";
-  chartData: { label: string; completed: number }[];
-  ranking: { storeId: number; name: string; color: string; completedCount: number }[];
-  activityData: { date: string; count: number }[];
-  goals: Goal[];
-  dailyGoals: DailyGoalSummary[];
-  recentActivities: Activity[];
-  activityBlocks: ActivityBlock[];
-  dailyGoalStats: DailyGoalStat[];
-}
-
 export interface DailyGoalStat {
   dailyGoalId: number;
   scope: string;
@@ -127,6 +104,8 @@ export interface DailyGoalStat {
   achievedToday: number;
   achievedDays: number;
   totalDays: number;
+  store?: Store | null;
+  owner?: Owner | null;
 }
 
 export interface Activity {
@@ -148,4 +127,28 @@ export interface AnalyticsData {
   topStores: { id: number; name: string; color: string; count: number }[];
   topCategories: { id: number; name: string; count: number }[];
   topOwners: { id: number; name: string; count: number }[];
+}
+
+
+export interface DashboardData {
+  today: {
+    designs: number;
+    completedDesigns: number;
+    designsChangePct: number | null;
+    completedChangePct: number | null;
+  };
+  totalIdeas: number;
+  totalIdeasChangePct: number | null;
+  completedCount: number;
+  completedCountChangePct: number | null;
+  totals: { stores: number; owners: number };
+  period: "week" | "month" | "year";
+  chartData: { label: string; completed: number }[];
+  ranking: { storeId: number; name: string; color: string; completedCount: number }[];
+  activityData: { date: string; count: number }[];
+  goals: Goal[];
+  dailyGoals: DailyGoalSummary[];
+  recentActivities: Activity[];
+  activityBlocks: ActivityBlock[];
+  dailyGoalStats: DailyGoalStat[];
 }

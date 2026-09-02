@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import type { DashboardData, Activity } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleCheck, Palette, Store, UserStar, User, Globe, Trash2, Pin, Calendar, Plus, Pencil, Clock } from "lucide-react";
+import { CircleCheck, Palette, Store, UserStar, User, Globe, Trash2, Pin, Calendar, Plus, Pencil, Clock, SoapDispenserDroplet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
@@ -182,15 +182,21 @@ export default function Dashboard() {
   if (!data) return <p>Loading...</p>;
 
   const dailyGoalItems = data.dailyGoalStats.map((s) => {
-    const Icon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
+    const scopeLabel = s.scope === "STORE" ? "Store Daily" : s.scope === "OWNER" ? "Owner Daily" : "Global Daily";
+    const ScopeIcon = s.scope === "STORE" ? Store : s.scope === "OWNER" ? User : Globe;
     const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
     return (
       <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg bg-background">
         <div className="flex items-center justify-between gap-3 rounded-t-lg bg-card px-4 py-2">
+
           <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{s.displayName}</span>
-            {isAchievedToday && <Badge className="bg-chart-2 text-white">Complete</Badge>}
+            <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg">
+              <ScopeIcon className="h-4 w-4" />
+              <span className="text-xs font-medium truncate">{scopeLabel}</span>
+            </div>
+            {s.scope !== "GLOBAL" && (
+              <div style={{ backgroundColor: s.scope === "STORE" ? s.store?.color : undefined }} className={`text-xs flex items-center gap-2 min-w-0 ${s.scope === "STORE" ? "p-1.5 px-3 rounded-lg" : s.scope === "OWNER" ? "p-1.5 px-3 text-cyan-500 rounded-lg" : ""}`}>{s.displayName}</div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
@@ -209,8 +215,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="text-xs flex items-center justify-between p-3">
-          <p className="text-muted-foreground">{s.achievedDays}/{s.totalDays} days achieved</p>
+        <div className="text-xs flex items-center justify-between p-4">
+
+          {isAchievedToday && <Badge className="bg-chart-2 text-white rounded-sm!">Complete</Badge>}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteDailyGoal(s.dailyGoalId)}>
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -223,18 +230,23 @@ export default function Dashboard() {
     .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
     .map((g) => {
       const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
+      const scopeLabel = g.store ? "Store Campaign" : g.scope === "OWNER" ? "Owner Campaign" : "Global Campaign";
+      const ScopeIcon = g.store ? Store : g.scope === "OWNER" ? User : Globe;
+
+      let daysLeftLabel: string | null = null;
+      if (g.deadline) {
+        const diffDays = Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        daysLeftLabel = diffDays < 0 ? "Overdue" : diffDays === 0 ? "Due today" : `${diffDays} days left`;
+      }
       return (
         <div key={g.id} className="flex w-full shrink-0 flex-col border rounded-lg">
           <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="flex items-center gap-2 min-w-0">
-              {g.store ? (
-                <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
-              ) : g.scope === "OWNER" ? (
-                <User className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <Globe className="h-4 w-4 text-muted-foreground" />
-              )}
-              <span className="text-sm font-medium truncate">{g.name}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 bg-chart-2/30 p-1.5 px-3 text-chart-2 rounded-lg">
+                <ScopeIcon className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">{scopeLabel}</span>
+              </div>
+              <span className="text-sm font-medium truncate">/ {g.name}</span>
             </div>
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleTogglePinGoal(g.id)}>
               <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
@@ -262,10 +274,10 @@ export default function Dashboard() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
-        <div className="space-y-4 md:space-y-2 flex flex-col md:grid md:grid-cols-8 md:gap-4">
+        <div className="flex flex-col gap-4 md:gap-6">
 
-          {/* Activity Blocks */}
-          <div className="hidden md:block col-span-8">
+          {/* Activity Blocks — full width */}
+          <div className="hidden md:block">
             <div className="flex scrollbar-none -ml-2 -mr-2">
               {data.activityBlocks.map((b) => {
                 const dateNum = new Date(b.date).getDate();
@@ -294,231 +306,215 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Today Stats */}
-          <Card className="md:col-span-2">
-            <CardContent>
-              <div className="grid grid-cols-12 justify-between">
-                <div className="col-span-10 flex flex-col justify-between gap-2">
-                  <span className="text-muted-foreground text-base leading-none">Ideas</span>
-                  <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
-                    {data.today.designs}
-                    <ChangeBadge pct={data.today.designsChangePct} />
-                  </span>
-                </div>
-                <div className="col-span-2 justify-self-end">
-                  <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
-                    <Palette />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="md:col-span-2">
-            <CardContent>
-              <div className="grid grid-cols-12 justify-between">
-                <div className="col-span-10 flex flex-col justify-between gap-2">
-                  <span className="text-muted-foreground text-base leading-none">Designs</span>
-                  <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
-                    {data.today.completedDesigns}
-                    <ChangeBadge pct={data.today.completedChangePct} />
-                  </span>
-                </div>
-                <div className="col-span-2 justify-self-end">
-                  <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
-                    <CircleCheck />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="md:col-span-2">
-            <CardContent>
-              <div className="grid grid-cols-12 justify-between">
-                <div className="col-span-10 flex flex-col justify-between gap-2">
-                  <span className="text-muted-foreground text-base leading-none">Stores</span>
-                  <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">{data.totals.stores}</span>
-                </div>
-                <div className="col-span-2 justify-self-end">
-                  <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
-                    <Store />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="md:col-span-2">
-            <CardContent>
-              <div className="grid grid-cols-12 justify-between">
-                <div className="col-span-10 flex flex-col justify-between gap-2">
-                  <span className="text-muted-foreground text-base leading-none">Owners</span>
-                  <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">{data.totals.owners}</span>
-                </div>
-                <div className="col-span-2 justify-self-end">
-                  <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
-                    <UserStar />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          { /* Designs Completed Chart */}
-          <div className="md:col-span-5 flex flex-col gap-4">
-            <Card className="h-fit">
-              <CardHeader>
-                <CardTitle>Designs Completed</CardTitle>
-                <CardDescription>Overview of completed designs throughout the year.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={yearChartData}>
-                    <defs>
-                      <linearGradient id="fillDashboardYear" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={1} />
-                        <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.05} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                    <XAxis dataKey="label" fontSize={12} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Area type="monotone" dataKey="completed" stroke="var(--chart-2)" strokeWidth={2} fill="url(#fillDashboardYear)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-          {/* Designs Distribution */}
-          <div className="md:col-span-3 flex flex-col gap-6">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Designs Distribution</CardTitle>
-                <CardDescription>Distribution of completed designs across stores.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.ranking.length === 0 || data.completedCount === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada data.</p>
-                ) : (
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-40 w-40 shrink-0">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={data.ranking}
-                            dataKey="completedCount"
-                            nameKey="name"
-                            innerRadius={55}
-                            outerRadius={75}
-                            paddingAngle={2}
-                            stroke="none"
-                          >
-                            {data.ranking.map((r) => (
-                              <Cell key={r.storeId} fill={r.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "var(--popover)",
-                              border: "1px solid var(--border)",
-                              borderRadius: "8px",
-                              fontSize: "12px",
-                            }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-foreground">{data.completedCount}</span>
-                        <span className="text-xs text-muted-foreground">Designs</span>
+          {/* 2 KOLOM INDEPENDEN */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+
+            {/* ==== KOLOM KIRI ==== */}
+            <div className="col-span-2 flex flex-col gap-4 md:gap-6">
+              {/* 4 stat cards */}
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
+                <Card>
+                  <CardContent>
+                    <div className="grid grid-cols-12 justify-between">
+                      <div className="col-span-10 flex flex-col justify-between gap-2">
+                        <span className="text-muted-foreground text-base leading-none">Ideas</span>
+                        <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
+                          {data.today.designs}
+                          <ChangeBadge pct={data.today.designsChangePct} />
+                        </span>
+                      </div>
+                      <div className="col-span-2 justify-self-end">
+                        <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
+                          <Palette />
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-1 flex-col gap-2 min-w-0">
-                      {data.ranking.map((r) => {
-                        const pct = Math.round((r.completedCount / data.completedCount) * 100);
-                        return (
-                          <div key={r.storeId} className="flex items-center justify-between gap-2 text-sm">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />
-                              <span className="truncate">{r.name}</span>
-                            </div>
-                            <span className="font-medium">{pct}%</span>
-                          </div>
-                        );
-                      })}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <div className="grid grid-cols-12 justify-between">
+                      <div className="col-span-10 flex flex-col justify-between gap-2">
+                        <span className="text-muted-foreground text-base leading-none">Designs</span>
+                        <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">
+                          {data.today.completedDesigns}
+                          <ChangeBadge pct={data.today.completedChangePct} />
+                        </span>
+                      </div>
+                      <div className="col-span-2 justify-self-end">
+                        <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
+                          <CircleCheck />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-          {/* Daily Goals & Campaign, sekarang carousel */}
-          <div className="md:col-span-3 flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daily Goals</CardTitle>
-                <CardDescription>Daily goals to keep you on track.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {dailyGoalItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>
-                ) : (
-                  <SimpleCarousel items={dailyGoalItems} />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="md:col-span-3 flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaigns</CardTitle>
-                <CardDescription>Active campaigns in your account.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {campaignItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada campaign aktif.</p>
-                ) : (
-                  <SimpleCarousel items={campaignItems} />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-
-
-          {/* Recent Activity */}
-          <div className="md:col-span-2 flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest activities in your account.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.recentActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada aktivitas.</p>
-                ) : (
-                  <ScrollArea className="h-64">
-                    <div className="flex flex-col gap-4 pr-3">
-                      {data.recentActivities.map((a) => {
-                        const Icon = EVENT_ICON[a.event] ?? Pencil;
-                        const color = EVENT_COLOR[a.event] ?? "text-muted-foreground bg-muted";
-                        return (
-                          <div key={a.id} className="flex items-start gap-3">
-                            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="flex flex-col gap-1 min-w-0">
-                              <span className="text-sm font-semibold text-foreground truncate leading-none">{getActivityTitle(a)}</span>
-                              <span className="text-xs text-muted-foreground leading-none">{getActivityDescription(a)}</span>
-                              <span className="text-xs text-muted-foreground/50">{timeAgo(a.createdAt)}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <div className="grid grid-cols-12 justify-between">
+                      <div className="col-span-10 flex flex-col justify-between gap-2">
+                        <span className="text-muted-foreground text-base leading-none">Stores</span>
+                        <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">{data.totals.stores}</span>
+                      </div>
+                      <div className="col-span-2 justify-self-end">
+                        <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
+                          <Store />
+                        </div>
+                      </div>
                     </div>
-                  </ScrollArea>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <div className="grid grid-cols-12 justify-between">
+                      <div className="col-span-10 flex flex-col justify-between gap-2">
+                        <span className="text-muted-foreground text-base leading-none">Owners</span>
+                        <span className="text-primary text-2xl font-bold flex items-end gap-2 leading-none">{data.totals.owners}</span>
+                      </div>
+                      <div className="col-span-2 justify-self-end">
+                        <div className="w-16 h-16 items-center justify-center flex border-chart-2 bg-chart-2/10 text-chart-2 rounded-lg">
+                          <UserStar />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
+              {/* Chart */}
+              <Card className="h-fit">
+                <CardHeader>
+                  <CardTitle>Overview</CardTitle>
+                  <CardDescription>Completed designs throughout the year.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <AreaChart data={yearChartData}>
+                      <defs>
+                        <linearGradient id="fillDashboardYear" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={1} />
+                          <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                      <XAxis dataKey="label" fontSize={12} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Area type="monotone" dataKey="completed" stroke="var(--chart-2)" strokeWidth={2} fill="url(#fillDashboardYear)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Pie chart */}
+              <Card className="h-fit">
+                <CardHeader>
+                  <CardTitle>Designs Distribution</CardTitle>
+                  <CardDescription>Distribution of completed designs across stores.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {data.ranking.length === 0 || data.completedCount === 0 ? (
+                    <p className="text-sm text-muted-foreground">Belum ada data.</p>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-40 w-40 shrink-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={data.ranking}
+                              dataKey="completedCount"
+                              nameKey="name"
+                              innerRadius={55}
+                              outerRadius={75}
+                              paddingAngle={2}
+                              stroke="none"
+                            >
+                              {data.ranking.map((r) => (
+                                <Cell key={r.storeId} fill={r.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "var(--popover)",
+                                border: "1px solid var(--border)",
+                                borderRadius: "8px",
+                                fontSize: "12px",
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-bold text-foreground">{data.completedCount}</span>
+                          <span className="text-xs text-muted-foreground">Designs</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-1 flex-col gap-2 min-w-0">
+                        {data.ranking.map((r) => {
+                          const pct = Math.round((r.completedCount / data.completedCount) * 100);
+                          return (
+                            <div key={r.storeId} className="flex items-center justify-between gap-2 text-sm">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />
+                                <span className="truncate">{r.name}</span>
+                              </div>
+                              <span className="font-medium">{pct}%</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* ==== KOLOM KANAN ==== */}
+            <div className="flex flex-col gap-4 md:gap-6">
+              {dailyGoalItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>
+              ) : (
+                <SimpleCarousel items={dailyGoalItems} />
+              )}
+              {campaignItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Belum ada campaign aktif.</p>
+              ) : (
+                <SimpleCarousel items={campaignItems} />
+              )}
+
+              <Card className="h-fit">
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest activities in your account.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {data.recentActivities.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Belum ada aktivitas.</p>
+                  ) : (
+                    <ScrollArea className="h-64">
+                      <div className="flex flex-col gap-4 pr-3">
+                        {data.recentActivities.map((a) => {
+                          const Icon = EVENT_ICON[a.event] ?? Pencil;
+                          const color = EVENT_COLOR[a.event] ?? "text-muted-foreground bg-muted";
+                          return (
+                            <div key={a.id} className="flex items-start gap-3">
+                              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
+                                <Icon className="h-4 w-4" />
+                              </div>
+                              <div className="flex flex-col gap-1 min-w-0">
+                                <span className="text-sm font-semibold text-foreground truncate leading-none">{getActivityTitle(a)}</span>
+                                <span className="text-xs text-muted-foreground leading-none">{getActivityDescription(a)}</span>
+                                <span className="text-xs text-muted-foreground/50">{timeAgo(a.createdAt)}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>

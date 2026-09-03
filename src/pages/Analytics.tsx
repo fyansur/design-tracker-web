@@ -157,7 +157,7 @@ export default function Analytics() {
                 <CardDescription>Most popular stores based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topStores.length === 0 && <p className="text-sm text-muted-foreground">Belum ada data.</p>}
+                {data.topStores.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
                 {data.topStores.map((s, i) => {
                   const maxCount = data.topStores[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (s.count / maxCount) * 100 : 0;
@@ -192,7 +192,7 @@ export default function Analytics() {
                 <CardDescription>Most popular owners based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topOwners.length === 0 && <p className="text-sm text-muted-foreground">Belum ada data.</p>}
+                {data.topOwners.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
                 {data.topOwners.map((o, i) => {
                   const maxCount = data.topOwners[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (o.count / maxCount) * 100 : 0;

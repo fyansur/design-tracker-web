@@ -153,3 +153,16 @@ export function buildCreateDesignSchema(existingCategoryNames: string[]) {
     });
 }
 export type CreateDesignForm = z.infer<ReturnType<typeof buildCreateDesignSchema>>;
+
+export function buildEditStoreSchema(existingStoreNames: string[], excludeName?: string) {
+  return z.object({
+    name: z.string().min(1, "Store name is required").max(100, "Max 100 characters"),
+    ownerId: z.string().min(1, "Owner is required"),
+    color: z.string().min(1, "Color is required"),
+  }).superRefine((data, ctx) => {
+    if (isDuplicateName(existingStoreNames, data.name, excludeName)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["name"], message: "This store name is already taken" });
+    }
+  });
+}
+export type EditStoreForm = z.infer<ReturnType<typeof buildEditStoreSchema>>;

@@ -8,7 +8,7 @@ import { Field, FieldContent, FieldError } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Trash2, User, Pencil, Check, X, CircleAlert } from "lucide-react";
-import { ownerNameSchema, type OwnerNameForm, type UniqueNameForm, buildUniqueNameSchema } from "@/lib/validation";
+import { type OwnerNameForm, type UniqueNameForm, buildUniqueNameSchema } from "@/lib/validation";
 import type { Owner } from "@/types";
 
 export function OwnerRow({

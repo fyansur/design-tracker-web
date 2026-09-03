@@ -56,7 +56,7 @@ export default function StoreDetail() {
             await api.put(`/designs/${design.id}`, { isCompleted: !design.isCompleted });
             fetchData();
         } catch {
-            alert("Gagal update status — pastikan design ini punya owner (lewat store).");
+            alert("Failed to update status — make sure this design has an owner (via the store).");
         }
     }
 
@@ -293,7 +293,7 @@ export default function StoreDetail() {
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-muted-foreground">Filter by</span>
                         {storeCategories.length === 0 && (
-                            <span className="text-sm text-muted-foreground">Belum ada category.</span>
+                            <span className="text-sm text-muted-foreground">No categories available.</span>
                         )}
                         {storeCategories.map((c) => {
                             const isActive = selectedCategoryIds.includes(c.id);
@@ -322,14 +322,14 @@ export default function StoreDetail() {
                                         {searchQuery || selectedCategoryIds.length > 0 ? <Search /> : <PackageOpen />}
                                     </EmptyMedia>
                                     <EmptyTitle>
-                                        {searchQuery || selectedCategoryIds.length > 0 ? "Gak ada hasil" : `Belum ada design ${statusTab}`}
+                                        {searchQuery || selectedCategoryIds.length > 0 ? "No results found" : `No designs ${statusTab} yet`}
                                     </EmptyTitle>
                                     <EmptyDescription>
                                         {searchQuery || selectedCategoryIds.length > 0
-                                            ? "Coba ubah kata kunci pencarian atau filter category."
+                                            ? "Try changing the search keywords or filtering by category."
                                             : statusTab === "pending"
-                                                ? "Design baru yang belum di-complete bakal muncul di sini."
-                                                : "Design yang udah di-complete bakal muncul di sini."}
+                                                ? "New designs that haven't been completed will appear here."
+                                                : "Designs that have been completed will appear here."}
                                     </EmptyDescription>
                                 </EmptyHeader>
                             </Empty>

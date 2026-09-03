@@ -18,8 +18,8 @@ export default function Register() {
       await register(name, email, password);
       navigate("/");
     } catch (err) {
-      const message = isAxiosError(err) ? err.response?.data?.message : "Register gagal";
-      setError(message || "Register gagal");
+      const message = isAxiosError(err) ? err.response?.data?.message : "Registration failed";
+      setError(message || "Registration failed");
     }
   }
 
@@ -31,7 +31,7 @@ export default function Register() {
       <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
       <button type="submit">Register</button>
-      <p>Udah punya akun? <Link to="/login">Login</Link></p>
+      <p>Already have an account? <Link to="/login">Login</Link></p>
     </form>
   );
 }

@@ -33,7 +33,7 @@ export function DailyGoalsList({
             <Empty className="py-6">
                 <EmptyHeader>
                     <EmptyMedia variant="icon"><Clock /></EmptyMedia>
-                    <EmptyTitle className="text-sm">Belum ada daily goal</EmptyTitle>
+                    <EmptyTitle className="text-sm">No daily goals yet</EmptyTitle>
                 </EmptyHeader>
             </Empty>
         );

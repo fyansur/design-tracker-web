@@ -24,7 +24,7 @@ export function CampaignsList({
       <Empty className="py-6">
         <EmptyHeader>
           <EmptyMedia variant="icon"><Pin /></EmptyMedia>
-          <EmptyTitle className="text-sm">Belum ada campaign aktif</EmptyTitle>
+          <EmptyTitle className="text-sm">No active campaigns yet</EmptyTitle>
         </EmptyHeader>
       </Empty>
     );

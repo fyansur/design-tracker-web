@@ -48,7 +48,7 @@ export function EditDesignDialog({
       setOpen(false);
       onUpdated();
     } catch {
-      setError("Gagal menyimpan perubahan");
+      setError("Failed to save changes");
     }
   }
 
@@ -66,14 +66,14 @@ export function EditDesignDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex flex-col gap-2">
-            <Label>Nama</Label>
+            <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
 
           <div className="flex flex-col gap-2">
             <Label>Category</Label>
             <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
-              <SelectTrigger><SelectValue placeholder="Pilih category existing" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select existing category" /></SelectTrigger>
               <SelectContent>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -81,7 +81,7 @@ export function EditDesignDialog({
               </SelectContent>
             </Select>
             <Input
-              placeholder="atau ketik nama category baru"
+              placeholder="or type new category name"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
             />
@@ -93,7 +93,7 @@ export function EditDesignDialog({
           </div>
 
           <DialogFooter>
-            <Button type="submit">Simpan</Button>
+            <Button type="submit">Save</Button>
           </DialogFooter>
         </form>
       </DialogContent>

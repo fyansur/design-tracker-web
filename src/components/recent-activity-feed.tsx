@@ -18,7 +18,7 @@ export function RecentActivityFeed({
       <Empty className="py-6">
         <EmptyHeader>
           <EmptyMedia variant="icon"><Clock /></EmptyMedia>
-          <EmptyTitle className="text-sm">Belum ada aktivitas</EmptyTitle>
+          <EmptyTitle className="text-sm">No recent activity</EmptyTitle>
         </EmptyHeader>
       </Empty>
     );

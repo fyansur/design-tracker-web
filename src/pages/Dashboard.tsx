@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
-import type { DashboardData, Activity } from "../types";
+import type { DashboardData } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleCheck, Store, User, Globe, Trash2, Plus, Pencil, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, ArchiveRestore } from "lucide-react";
 import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TodayStatsCards } from "@/components/today-stats-cards";
@@ -20,16 +18,10 @@ const STATUS_COLOR = {
 } as const;
 
 const STATUS_LABEL = {
-  achieved: "tercapai",
-  missed: "belum tercapai",
-  "no-target": "belum ada target di tanggal ini",
+  achieved: "achieved",
+  missed: "not achieved",
+  "no-target": "no target set for this date",
 } as const;
-
-const SUBJECT_LABEL: Record<string, string> = {
-  Design: "idea",
-  Store: "store",
-  Owner: "owner",
-};
 
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -163,7 +155,7 @@ export default function Dashboard() {
                         : data.rankingByOwner.map((o, i) => ({ key: o.ownerId, name: o.name, count: o.completedCount, color: OWNER_COLORS[i % OWNER_COLORS.length] }));
 
                     if (items.length === 0 || data.completedCount === 0) {
-                      return <p className="text-sm text-muted-foreground">Belum ada data.</p>;
+                      return <p className="text-sm text-muted-foreground">No data available.</p>;
                     }
 
                     return (

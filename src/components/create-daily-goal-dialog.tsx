@@ -33,7 +33,7 @@ export function CreateDailyGoalDialog({
       setOpen(false);
       onCreated();
     } catch {
-      setError("Daily goal untuk target ini udah ada");
+      setError("A daily goal for this scope already exists");
     }
   }
 

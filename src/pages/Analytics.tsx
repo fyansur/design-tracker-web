@@ -122,7 +122,7 @@ export default function Analytics() {
                 <CardDescription>Most popular categories based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topCategories.length === 0 && <p className="text-sm text-muted-foreground">Belum ada data.</p>}
+                {data.topCategories.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
                 {data.topCategories.map((c, i) => {
                   const maxCount = data.topCategories[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (c.count / maxCount) * 100 : 0;

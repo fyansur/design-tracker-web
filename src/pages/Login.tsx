@@ -17,8 +17,8 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      const message = isAxiosError(err) ? err.response?.data?.message : "Login gagal";
-      setError(message || "Login gagal");
+      const message = isAxiosError(err) ? err.response?.data?.message : "Login failed";
+      setError(message || "Login failed");
     }
   }
 
@@ -29,7 +29,7 @@ export default function Login() {
       <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
       <button type="submit">Login</button>
-      <p>Belum punya akun? <Link to="/register">Register</Link></p>
+      <p>Don't have an account? <Link to="/register">Register</Link></p>
     </form>
   );
 }

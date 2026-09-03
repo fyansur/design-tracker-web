@@ -31,7 +31,7 @@ export function CreateStoreDialog({
         resolvedOwnerId = String(ownerRes.data.id);
       }
       if (!resolvedOwnerId) {
-        setError("Pilih owner atau isi nama owner baru");
+        setError("Select an owner or enter a new owner name");
         return;
       }
 
@@ -42,7 +42,7 @@ export function CreateStoreDialog({
       setOwnerId("");
       onCreated();
     } catch {
-      setError("Gagal menambahkan store (nama mungkin sudah dipakai)");
+      setError("Failed to add store (name might already be taken)");
     }
   }
 
@@ -70,19 +70,19 @@ export function CreateStoreDialog({
           <div className="flex flex-col gap-2">
             <Label>Owner</Label>
             <Select value={ownerId} onValueChange={(v) => setOwnerId(v ?? "")}>
-              <SelectTrigger><SelectValue placeholder="Pilih owner existing" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select existing owner" /></SelectTrigger>
               <SelectContent>
                 {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Input
-              placeholder="atau ketik nama owner baru"
+              placeholder="or type new owner name"
               value={newOwnerName}
               onChange={(e) => setNewOwnerName(e.target.value)}
             />
           </div>
 
-          <DialogFooter><Button type="submit">Simpan</Button></DialogFooter>
+          <DialogFooter><Button type="submit">Save</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

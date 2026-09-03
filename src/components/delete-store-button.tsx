@@ -19,16 +19,16 @@ export function DeleteStoreButton({
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Hapus "{storeName}"?</AlertDialogTitle>
+          <AlertDialogTitle>Delete "{storeName}"?</AlertDialogTitle>
           <AlertDialogDescription>
-            Store akan masuk Trash dan bisa direstore nanti. Design yang nempel di store ini akan
-            kehilangan referensi store-nya (tetap completed, tinggal di-assign ulang nanti).
+            This store will be moved to Trash and can be restored later. Designs linked to this store
+            will lose their store reference (they stay completed, and can be reassigned later).
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setOpen(false)}>Batal</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => setOpen(false)}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={() => { onConfirm(); setOpen(false); }}>
-            Hapus
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -16,8 +16,8 @@ export default function Monitor() {
   const [data, setData] = useState<MonitorData | null>(null);
 
   useEffect(() => {
-    // pakai axios langsung (BUKAN instance `api` kita) — karena endpoint ini
-    // publik, gak butuh withCredentials/cookie sama sekali
+    // Use axios directly (NOT our `api` instance) — this endpoint is public,
+    // so it doesn't need withCredentials/cookies at all.
     axios.get<MonitorData>(`http://localhost:4000/api/monitor/${token}`)
       .then((res) => setData(res.data));
   }, [token]);
@@ -27,9 +27,9 @@ export default function Monitor() {
   return (
     <div>
       <h1>{data.monitoredUser.name} {data.monitoredUser.isActive ? "🟢 Online" : "⚪ Offline"}</h1>
-      <p>Hari ini: {data.designsToday} — 30 hari terakhir: {data.designsLast30Days}</p>
+      <p>Today: {data.designsToday} — Last 30 days: {data.designsLast30Days}</p>
 
-      <h2>Completed Terbaru</h2>
+      <h2>Recently Completed</h2>
       <ul>
         {data.recentCompletedDesigns.map((d) => (
           <li key={d.id}>{d.name} — {d.store_name} ({d.owner_name}) — {d.completed_at}</li>

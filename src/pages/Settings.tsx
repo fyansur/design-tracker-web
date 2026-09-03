@@ -21,7 +21,7 @@ export default function Settings() {
   async function handleUpdateProfile(e: FormEvent) {
     e.preventDefault();
     await api.put("/auth/profile", { name });
-    setProfileMsg("Profile berhasil diupdate");
+    setProfileMsg("Profile updated successfully");
   }
 
   async function handleChangePassword(e: FormEvent) {
@@ -29,11 +29,11 @@ export default function Settings() {
     setPasswordMsg("");
     try {
       await api.put("/auth/password", { currentPassword, newPassword });
-      setPasswordMsg("Password berhasil diganti");
+      setPasswordMsg("Password updated successfully");
       setCurrentPassword("");
       setNewPassword("");
     } catch {
-      setPasswordMsg("Password lama salah");
+      setPasswordMsg("Current password is incorrect");
     }
   }
 
@@ -53,7 +53,7 @@ export default function Settings() {
         <CardContent>
           <form onSubmit={handleUpdateProfile} className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              <Label>Nama</Label>
+              <Label>Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
@@ -61,31 +61,31 @@ export default function Settings() {
               <Input value={user?.email} disabled />
             </div>
             {profileMsg && <p className="text-sm text-muted-foreground">{profileMsg}</p>}
-            <Button type="submit" className="self-start">Simpan</Button>
+            <Button type="submit" className="self-start">Save</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm">Ganti Password</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">Change Password</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleChangePassword} className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              <Label>Password Lama</Label>
+              <Label>Current Password</Label>
               <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Password Baru</Label>
+              <Label>New Password</Label>
               <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
             </div>
             {passwordMsg && <p className="text-sm text-muted-foreground">{passwordMsg}</p>}
-            <Button type="submit" className="self-start">Ganti Password</Button>
+            <Button type="submit" className="self-start">Change Password</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm">Monitor Publik</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">Public Monitor</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-3">
           <p className="text-sm text-muted-foreground break-all">{monitorUrl}</p>
           <Separator />
@@ -93,7 +93,7 @@ export default function Settings() {
             Regenerate Token
           </Button>
           <p className="text-xs text-muted-foreground">
-            Regenerate akan bikin link lama gak bisa diakses lagi.
+            Regenerating will make the old link inaccessible.
           </p>
         </CardContent>
       </Card>

@@ -20,7 +20,7 @@ export function CreateOwnerDialog({ onCreated }: { onCreated: () => void }) {
       setName("");
       onCreated();
     } catch {
-      setError("Gagal menambahkan owner (nama mungkin sudah dipakai)");
+      setError("Failed to add owner (name might already be taken)");
     }
   }
 
@@ -32,16 +32,16 @@ export function CreateOwnerDialog({ onCreated }: { onCreated: () => void }) {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Tambah Owner Baru</DialogTitle>
+          <DialogTitle>Add New Owner</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex flex-col gap-2">
-            <Label>Nama Owner</Label>
+            <Label>Owner Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
           </div>
           <DialogFooter>
-            <Button type="submit">Simpan</Button>
+            <Button type="submit">Save</Button>
           </DialogFooter>
         </form>
       </DialogContent>

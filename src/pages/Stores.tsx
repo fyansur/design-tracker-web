@@ -50,7 +50,7 @@ export default function Stores() {
       setOwnerError((prev) => ({ ...prev, [id]: "" }));
       loadAll();
     } catch {
-      setOwnerError((prev) => ({ ...prev, [id]: "Masih ada store aktif — reassign dulu" }));
+      setOwnerError((prev) => ({ ...prev, [id]: "There are still active stores — reassign first" }));
     }
   }
 
@@ -68,7 +68,7 @@ export default function Stores() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nama</TableHead>
+                  <TableHead>Name</TableHead>
                   <TableHead>Owner</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
@@ -77,7 +77,7 @@ export default function Stores() {
                 {stores.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center text-sm text-muted-foreground py-6">
-                      Belum ada store.
+                      No stores yet.
                     </TableCell>
                   </TableRow>
                 )}
@@ -109,7 +109,7 @@ export default function Stores() {
         </div>
         <div className="flex flex-col gap-6">
           {owners.length === 0 && (
-            <p className="text-sm text-muted-foreground">Belum ada owner.</p>
+            <p className="text-sm text-muted-foreground">No owners yet.</p>
           )}
           {owners.map((o) => (
             <div key={o.id} className="flex flex-col gap-1 rounded-lg border px-4 py-3">

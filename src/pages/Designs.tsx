@@ -49,7 +49,7 @@ export default function Designs() {
 
     async function handleToggleComplete(design: Design) {
         if (!design.isCompleted && !design.ownerId) {
-            // belum punya owner — buka inline picker, jangan kirim request dulu
+            // no owner yet — open inline picker, don't send the request yet
             setPendingCompleteId(design.id);
             return;
         }
@@ -86,7 +86,7 @@ export default function Designs() {
             await api.post(`/designs/${designId}/goals`, { goalId });
             loadDesigns();
         } catch {
-            // 409 kalau udah pernah di-assign — gapapa diabaikan aja
+            // 409 if already assigned — safe to ignore
         }
     }
 
@@ -105,17 +105,17 @@ export default function Designs() {
         <div>
             <h1>Designs</h1>
             <form onSubmit={handleSubmit}>
-                <input placeholder="Nama ide" value={name} onChange={(e) => setName(e.target.value)} required />
+                <input placeholder="Idea name" value={name} onChange={(e) => setName(e.target.value)} required />
                 <select value={storeId} onChange={(e) => setStoreId(e.target.value ? Number(e.target.value) : "")}>
-                    <option value="">-- store (opsional) --</option>
+                    <option value="">-- store (optional) --</option>
                     {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
 
                 <select value={categoryId} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}>
-                    <option value="">-- category (opsional) --</option>
+                    <option value="">-- category (optional) --</option>
                     {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <button type="submit">Tambah</button>
+                <button type="submit">Add</button>
             </form>
 
             <ul>
@@ -127,13 +127,13 @@ export default function Designs() {
                         {pendingCompleteId === d.id && (
                             <span>
                                 <select value={pickedOwnerId} onChange={(e) => setPickedOwnerId(Number(e.target.value))}>
-                                    <option value="">-- pilih owner --</option>
+                                    <option value="">-- select owner --</option>
                                     {owners.map((o) => (
                                         <option key={o.id} value={o.id}>{o.name}</option>
                                     ))}
                                 </select>
                                 <button onClick={() => handleConfirmOwnerAndComplete(d.id)}>Confirm Complete</button>
-                                <button onClick={() => setPendingCompleteId(null)}>Batal</button>
+                                <button onClick={() => setPendingCompleteId(null)}>Cancel</button>
                             </span>
                         )}
                         {d.isCompleted && (
@@ -144,7 +144,7 @@ export default function Designs() {
                                     value=""
                                     onChange={(e) => handleAssignStore(d.id, Number(e.target.value))}
                                 >
-                                    <option value="" disabled>⚠ Store belum di-assign</option>
+                                    <option value="" disabled>⚠ Store not assigned</option>
                                     {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             )
@@ -157,14 +157,14 @@ export default function Designs() {
                                     </span>
                                 ))}
                                 <select value="" onChange={(e) => handleAssignGoal(d.id, Number(e.target.value))}>
-                                    <option value="" disabled>+ assign ke goal</option>
+                                    <option value="" disabled>+ assign to goal</option>
                                     {goals
                                         .filter((g) => !d.goals?.some((dg) => dg.goal.id === g.id))
                                         .map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
                                 </select>
                             </div>
                         )}
-                        <button onClick={() => handleDelete(d.id)}>Hapus</button>
+                        <button onClick={() => handleDelete(d.id)}>Delete</button>
                     </li>
                 ))}
             </ul>

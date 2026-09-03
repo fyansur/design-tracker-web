@@ -38,7 +38,7 @@ export function CreateGoalDialog({
             setName("");
             onCreated();
         } catch (err: any) {
-            setError(err.response?.data?.message ?? "Gagal membuat campaign");
+            setError(err.response?.data?.message ?? "Failed to create campaign");
         }
     }
 

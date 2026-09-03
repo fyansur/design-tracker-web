@@ -12,6 +12,13 @@ import {
 import { Trash2, User, Pencil, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DeleteStoreButton } from "@/components/delete-store-button";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Field, FieldContent, FieldError } from "@/components/ui/field";
+import { ExternalLink } from "lucide-react";
+import { ownerNameSchema, type OwnerNameForm } from "@/lib/validation";
+import { OwnerRow } from "@/components/owner-row";
+import { EditStoreDialog } from "@/components/edit-store-dialog";
 
 export default function Stores() {
   const [stores, setStores] = useState<Store[]>([]);
@@ -70,13 +77,15 @@ export default function Stores() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Owner</TableHead>
+                  <TableHead>Designs</TableHead>
+                  <TableHead>Etsy URL</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {stores.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-muted-foreground py-6">
+                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-6">
                       No stores yet.
                     </TableCell>
                   </TableRow>
@@ -90,8 +99,20 @@ export default function Stores() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{s.owner?.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <span className="font-medium text-foreground">{s.completedCount ?? 0}</span> / {s.designCount ?? 0}
+                    </TableCell>
+                    <TableCell className="max-w-40 truncate">
+                      <a href={s.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{s.url}</span>
+                      </a>
+                    </TableCell>
                     <TableCell className="text-right">
-                      <DeleteStoreButton storeName={s.name} onConfirm={() => handleDeleteStore(s.id)} />
+                      <div className="flex items-center justify-end gap-1">
+                        <EditStoreDialog store={s} owners={owners} onUpdated={loadAll} />
+                        <DeleteStoreButton storeName={s.name} onConfirm={() => handleDeleteStore(s.id)} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -107,49 +128,12 @@ export default function Stores() {
           <span className="text-lg font-semibold text-foreground">Owners</span>
           <CreateOwnerDialog onCreated={loadAll} />
         </div>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
           {owners.length === 0 && (
             <p className="text-sm text-muted-foreground">No owners yet.</p>
           )}
           {owners.map((o) => (
-            <div key={o.id} className="flex flex-col gap-1 rounded-lg border px-4 py-3">
-              {editingOwnerId === o.id ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={ownerNameDraft}
-                    onChange={(e) => setOwnerNameDraft(e.target.value)}
-                    className="h-8"
-                    autoFocus
-                    onKeyDown={(e) => e.key === "Enter" && handleRenameOwner(o.id)}
-                  />
-                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleRenameOwner(o.id)}>
-                    <Check className="h-4 w-4 text-chart-2" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditingOwnerId(null)}>
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="text-sm truncate">{o.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost" size="icon" className="h-7 w-7"
-                      onClick={() => { setEditingOwnerId(o.id); setOwnerNameDraft(o.name); }}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteOwner(o.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {ownerError[o.id] && <p className="text-xs text-destructive">{ownerError[o.id]}</p>}
-            </div>
+            <OwnerRow key={o.id} owner={o} onRenamed={loadAll} onDelete={loadAll} />
           ))}
         </div>
       </div>

@@ -10,6 +10,8 @@ export interface Store {
   color: string;
   ownerId: number;
   owner?: Owner;
+  designCount?: number;
+  completedCount?: number;
 }
 
 export interface Category {

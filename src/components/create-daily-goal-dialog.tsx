@@ -1,98 +1,203 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Globe, Store as StoreIcon, User, Target, CircleAlert } from "lucide-react";
 import type { Store, Owner } from "@/types";
+import { dailyGoalFormSchema, type DailyGoalFormInput, type DailyGoalFormValues } from "@/lib/validation";
+
+const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
 
 export function CreateDailyGoalDialog({
   stores, owners, onCreated, lockedStoreId,
 }: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
   const [open, setOpen] = useState(false);
-  const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">(lockedStoreId ? "STORE" : "GLOBAL");
-  const [storeId, setStoreId] = useState(lockedStoreId ? String(lockedStoreId) : "");
-  const [ownerId, setOwnerId] = useState("");
-  const [targetCount, setTargetCount] = useState(5);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
+  const defaultValues: DailyGoalFormInput = {
+    scope: lockedStoreId ? "STORE" : "GLOBAL",
+    storeId: lockedStoreId ? String(lockedStoreId) : "",
+    ownerId: "",
+    targetCount: 5,
+  };
+
+  const form = useForm<DailyGoalFormInput, unknown, DailyGoalFormValues>({
+    resolver: zodResolver(dailyGoalFormSchema),
+    defaultValues,
+  });
+
+  const scope = form.watch("scope");
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (next) {
+      form.reset(defaultValues);
+      setServerError("");
+    }
+  }
+
+  async function onSubmit(values: DailyGoalFormValues) {
+    setServerError("");
     try {
       await api.post("/daily-goals", {
-        scope: lockedStoreId ? "STORE" : scope,
-        storeId: lockedStoreId ?? (scope === "STORE" ? Number(storeId) : undefined),
-        ownerId: !lockedStoreId && scope === "OWNER" ? Number(ownerId) : undefined,
-        targetCount,
+        scope: values.scope,
+        storeId: values.scope === "STORE" ? Number(values.storeId) : undefined,
+        ownerId: values.scope === "OWNER" ? Number(values.ownerId) : undefined,
+        targetCount: values.targetCount,
       });
       setOpen(false);
       onCreated();
     } catch {
-      setError("A daily goal for this scope already exists");
+      setServerError("A daily goal for this scope already exists");
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setOpen(true)}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleOpenChange(true)}>
         <Plus className="h-4 w-4" />
       </Button>
 
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Daily Goal</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {error && <p className="text-sm text-destructive">{error}</p>}
+        <DialogHeader><DialogTitle>Create Daily Goal</DialogTitle></DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
           {!lockedStoreId && (
-            <div className="flex flex-col gap-2">
-              <Label>Scope</Label>
-              <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="GLOBAL">Global</SelectItem>
-                  <SelectItem value="STORE">Store</SelectItem>
-                  <SelectItem value="OWNER">Owner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Controller
+              name="scope"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Scope</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><Globe/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue>{SCOPE_LABEL[field.value]}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GLOBAL">Global</SelectItem>
+                          <SelectItem value="STORE">Store</SelectItem>
+                          <SelectItem value="OWNER">Owner</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
           )}
 
           {!lockedStoreId && scope === "STORE" && (
-            <div className="flex flex-col gap-2">
-              <Label>Store</Label>
-              <Select value={storeId} onValueChange={(v) => setStoreId(v ?? "")}>
-                <SelectTrigger><SelectValue placeholder="Select a store" /></SelectTrigger>
-                <SelectContent>
-                  {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          {!lockedStoreId && scope === "OWNER" && (
-            <div className="flex flex-col gap-2">
-              <Label>Owner</Label>
-              <Select value={ownerId} onValueChange={(v) => setOwnerId(v ?? "")}>
-                <SelectTrigger><SelectValue placeholder="Select an owner" /></SelectTrigger>
-                <SelectContent>
-                  {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <Controller
+              name="storeId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Store</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><StoreIcon/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue placeholder="Select a store">
+                            {stores.find((s) => String(s.id) === field.value)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
           )}
 
-          <div className="flex flex-col gap-2">
-            <Label>Target Count</Label>
-            <Input type="number" min={1} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} />
-          </div>
+          {!lockedStoreId && scope === "OWNER" && (
+            <Controller
+              name="ownerId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Owner</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><User/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue placeholder="Select an owner">
+                            {owners.find((o) => String(o.id) === field.value)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
+
+          <Controller
+            name="targetCount"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Target Count</FieldLabel>
+                <FieldContent>
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start"><Target/></InputGroupAddon>
+                    <InputGroupInput
+                      aria-invalid={fieldState.invalid}
+                      type="number"
+                      min={1}
+                      value={field.value as number | string}
+                      onChange={field.onChange}
+                    />
+                  </InputGroup>
+                  {fieldState.invalid && (
+                    <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                      <CircleAlert className="size-4" />
+                      <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                    </Alert>
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
 
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit">Create Daily Goal</Button>
           </DialogFooter>
         </form>

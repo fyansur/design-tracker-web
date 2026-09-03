@@ -1,112 +1,303 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Globe, Store as StoreIcon, User, Target, Tag, CalendarClock, CircleAlert } from "lucide-react";
 import type { Store, Owner } from "@/types";
-import { Plus } from "lucide-react";
+import { goalFormSchema, type GoalFormInput, type GoalFormValues } from "@/lib/validation";
+
+const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
+const DURATION_LABEL: Record<string, string> = {
+  daily: "Today", weekly: "A Week", monthly: "A Month", yearly: "A Year", custom: "Custom (days)",
+};
 
 export function CreateGoalDialog({
-    stores, owners, onCreated, lockedStoreId,
+  stores, owners, onCreated, lockedStoreId,
 }: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
-    const [open, setOpen] = useState(false);
-    const [name, setName] = useState("");
-    const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">(lockedStoreId ? "STORE" : "GLOBAL");
-    const [storeId, setStoreId] = useState(lockedStoreId ? String(lockedStoreId) : "");
-    const [ownerId, setOwnerId] = useState("");
-    const [targetCount, setTargetCount] = useState(10);
+  const [open, setOpen] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-    const [error, setError] = useState("");
+  const defaultValues: GoalFormInput = {
+    name: "",
+    scope: lockedStoreId ? "STORE" : "GLOBAL",
+    storeId: lockedStoreId ? String(lockedStoreId) : "",
+    ownerId: "",
+    targetCount: 10,
+    durationType: "daily",
+    durationAmount: 7,
+  };
 
-    async function handleSubmit(e: FormEvent) {
-        e.preventDefault();
-        setError("");
-        try {
-            const resolvedScope = lockedStoreId ? "STORE" : scope;
-            await api.post("/goals", {
-                name: resolvedScope === "GLOBAL" ? name : undefined,
-                scope: resolvedScope,
-                storeId: lockedStoreId ?? (scope === "STORE" ? Number(storeId) : undefined),
-                ownerId: !lockedStoreId && scope === "OWNER" ? Number(ownerId) : undefined,
-                targetCount,
-            });
-            setOpen(false);
-            setName("");
-            onCreated();
-        } catch (err: any) {
-            setError(err.response?.data?.message ?? "Failed to create campaign");
-        }
+  const form = useForm<GoalFormInput, unknown, GoalFormValues>({
+    resolver: zodResolver(goalFormSchema),
+    defaultValues,
+  });
+
+  const scope = form.watch("scope");
+  const durationType = form.watch("durationType");
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (next) {
+      form.reset(defaultValues);
+      setServerError("");
     }
+  }
 
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setOpen(true)}>
-                <Plus className="h-4 w-4" />
-            </Button>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Create Campaign</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    {!lockedStoreId && (
-                        <div className="flex flex-col gap-2">
-                            <Label>Scope</Label>
-                            <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="GLOBAL">Global</SelectItem>
-                                    <SelectItem value="STORE">Store</SelectItem>
-                                    <SelectItem value="OWNER">Owner</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
+  async function onSubmit(values: GoalFormValues) {
+    setServerError("");
+    try {
+      await api.post("/goals", {
+        name: values.scope === "GLOBAL" ? values.name : undefined,
+        scope: values.scope,
+        storeId: values.scope === "STORE" ? Number(values.storeId) : undefined,
+        ownerId: values.scope === "OWNER" ? Number(values.ownerId) : undefined,
+        targetCount: values.targetCount,
+        durationType: values.durationType,
+        durationAmount: values.durationType === "custom" ? values.durationAmount : undefined,
+      });
+      setOpen(false);
+      onCreated();
+    } catch (err: any) {
+      setServerError(err.response?.data?.message ?? "Failed to create campaign");
+    }
+  }
 
-                    {(lockedStoreId ? false : scope === "GLOBAL") && (
-                        <div className="flex flex-col gap-2">
-                            <Label>Campaign Name</Label>
-                            <Input value={name} onChange={(e) => setName(e.target.value)} required />
-                        </div>
-                    )}
-                    {!lockedStoreId && scope === "STORE" && (
-                        <div className="flex flex-col gap-2">
-                            <Label>Store</Label>
-                            <Select value={storeId} onValueChange={(v) => setStoreId(v ?? "")}>
-                                <SelectTrigger><SelectValue placeholder="Select a store" /></SelectTrigger>
-                                <SelectContent>
-                                    {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
-                    {!lockedStoreId && scope === "OWNER" && (
-                        <div className="flex flex-col gap-2">
-                            <Label>Owner</Label>
-                            <Select value={ownerId} onValueChange={(v) => setOwnerId(v ?? "")}>
-                                <SelectTrigger><SelectValue placeholder="Select an owner" /></SelectTrigger>
-                                <SelectContent>
-                                    {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleOpenChange(true)}>
+        <Plus className="h-4 w-4" />
+      </Button>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Create Campaign</DialogTitle></DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
-                    <div className="flex flex-col gap-2">
-                        <Label>Target Count</Label>
-                        <Input type="number" min={1} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} />
-                        
-                    {error && <p className="text-sm text-destructive">{error}</p>}
-                    </div>
+          {!lockedStoreId && (
+            <Controller
+              name="scope"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Scope</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><Globe/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue>{SCOPE_LABEL[field.value]}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GLOBAL">Global</SelectItem>
+                          <SelectItem value="STORE">Store</SelectItem>
+                          <SelectItem value="OWNER">Owner</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
 
-                    <DialogFooter>
-                        <Button type="submit">Create Campaign</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+          {(lockedStoreId ? false : scope === "GLOBAL") && (
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Campaign Name</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><Tag/></InputGroupAddon>
+                      <InputGroupInput aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={field.onChange} placeholder="Enter campaign name" />
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
+
+          {!lockedStoreId && scope === "STORE" && (
+            <Controller
+              name="storeId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Store</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><StoreIcon/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue placeholder="Select a store">
+                            {stores.find((s) => String(s.id) === field.value)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
+
+          {!lockedStoreId && scope === "OWNER" && (
+            <Controller
+              name="ownerId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Owner</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><User/></InputGroupAddon>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                          <SelectValue placeholder="Select an owner">
+                            {owners.find((o) => String(o.id) === field.value)?.name}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
+
+          <Controller
+            name="targetCount"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Target Count</FieldLabel>
+                <FieldContent>
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start"><Target/></InputGroupAddon>
+                    <InputGroupInput
+                      aria-invalid={fieldState.invalid}
+                      type="number"
+                      min={1}
+                      value={field.value as number | string}
+                      onChange={field.onChange}
+                    />
+                  </InputGroup>
+                  {fieldState.invalid && (
+                    <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                      <CircleAlert className="size-4" />
+                      <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                    </Alert>
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="durationType"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Duration</FieldLabel>
+                <FieldContent>
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start"><CalendarClock/></InputGroupAddon>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
+                        <SelectValue>{DURATION_LABEL[field.value]}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Today</SelectItem>
+                        <SelectItem value="weekly">A Week</SelectItem>
+                        <SelectItem value="monthly">A Month</SelectItem>
+                        <SelectItem value="yearly">A Year</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </InputGroup>
+                  {fieldState.invalid && (
+                    <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                      <CircleAlert className="size-4" />
+                      <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                    </Alert>
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
+
+          {durationType === "custom" && (
+            <Controller
+              name="durationAmount"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Number of Days</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start"><CalendarClock/></InputGroupAddon>
+                      <InputGroupInput
+                        aria-invalid={fieldState.invalid}
+                        type="number"
+                        min={1}
+                        value={field.value as number | string}
+                        onChange={field.onChange}
+                      />
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                        <CircleAlert className="size-4" />
+                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                      </Alert>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit">Create Campaign</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }

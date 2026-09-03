@@ -2,22 +2,16 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import type { DashboardData, Activity } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleCheck, Palette, Store, UserStar, User, Globe, Trash2, Pin, Calendar, Plus, Pencil, Clock, SoapDispenserDroplet } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { CircleCheck, Store, User, Globe, Trash2, Plus, Pencil, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { TrendingUp, TrendingDown, ArchiveRestore } from "lucide-react";
-import { SimpleCarousel } from "@/components/simple-carousel";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TodayStatsCards } from "@/components/today-stats-cards";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
 import { RecentActivityFeed } from "@/components/recent-activity-feed";
 
-const SCOPE_ICON = { GLOBAL: Globe, STORE: Store, OWNER: User } as const;
 const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 const STATUS_COLOR = {
   achieved: "bg-blue-500",
@@ -31,65 +25,11 @@ const STATUS_LABEL = {
   "no-target": "belum ada target di tanggal ini",
 } as const;
 
-const EVENT_ICON: Record<string, any> = {
-  created: Plus,
-  completed: CircleCheck,
-  pending: Clock,
-  updated: Pencil,
-  deleted: Trash2,
-  recovered: ArchiveRestore,
-};
-
-const EVENT_COLOR: Record<string, string> = {
-  created: "text-blue-500 bg-blue-500/10",
-  completed: "text-green-500 bg-green-500/10",
-  pending: "text-yellow-500 bg-yellow-500/10",
-  updated: "text-muted-foreground bg-muted",
-  deleted: "text-red-500 bg-red-500/10",
-  recovered: "text-purple-500 bg-purple-500/10",
-};
-
 const SUBJECT_LABEL: Record<string, string> = {
   Design: "idea",
   Store: "store",
   Owner: "owner",
 };
-function getActivityTitle(a: Activity): string {
-  const subjectLabel = SUBJECT_LABEL[a.subjectType] ?? a.subjectType.toLowerCase();
-  const capitalized = subjectLabel.charAt(0).toUpperCase() + subjectLabel.slice(1);
-
-  switch (a.event) {
-    case "created": return `New ${subjectLabel} added`;
-    case "completed": return `${capitalized} completed`;
-    case "pending": return `${capitalized} marked as pending`;
-    case "updated": return `${capitalized} updated`;
-    case "deleted": return `${capitalized} deleted`;
-    case "recovered": return `${capitalized} restored`;
-    default: return a.event;
-  }
-}
-function getActivityDescription(a: Activity) {
-  const name = a.properties?.itemName ?? "Untitled";
-  const subjectLabel = SUBJECT_LABEL[a.subjectType] ?? a.subjectType.toLowerCase();
-  const bold = <span className="font-semibold text-foreground">{name}</span>;
-
-  switch (a.event) {
-    case "created":
-      return <>You added a new {subjectLabel} called {bold}.</>;
-    case "completed":
-      return <>You marked {bold} as complete.</>;
-    case "pending":
-      return <>You moved {bold} back to pending.</>;
-    case "updated":
-      return <>You updated the {subjectLabel} {bold}.</>;
-    case "deleted":
-      return <>You deleted the {subjectLabel} {bold}.</>;
-    case "recovered":
-      return <>You restored the {subjectLabel} {bold} from the trash.</>;
-    default:
-      return a.description;
-  }
-}
 
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -100,54 +40,10 @@ function ChartTooltip({ active, payload, label }: any) {
     </div>
   );
 }
-function timeAgo(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diffMs / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function ChangeBadge({ pct }: { pct: number | null }) {
-  if (pct === null) return <span className="text-xs text-muted-foreground">New</span>;
-  const isUp = pct >= 0;
-  const Icon = isUp ? TrendingUp : TrendingDown;
-  return (
-    <span className={`flex items-center gap-1 text-xs ${isUp ? "text-green-500" : "text-red-500"}`}>
-      <Icon className="h-3.5 w-3.5" />
-      {isUp ? "+" : ""}{pct}%
-    </span>
-  );
-}
-
-
-function CircularProgress({ percent }: { percent: number }) {
-  const radius = 34; // sebelumnya 26
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percent / 100) * circumference;
-  return (
-    <div className="relative h-20 w-20 shrink-0"> {/* sebelumnya h-16 w-16 */}
-      <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90"> {/* sebelumnya viewBox 0 0 64 64, h-16 w-16 */}
-        <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--muted)" strokeWidth="6" /> {/* cx/cy ikut naik jadi setengah dari viewBox */}
-        <circle
-          cx="40" cy="40" r={radius} fill="none"
-          stroke="var(--chart-2)" strokeWidth="6" strokeLinecap="round"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-base font-bold">{percent}%</span>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const [distributionTab, setDistributionTab] = useState<"store" | "owner">("store");
   const [data, setData] = useState<DashboardData | null>(null);
-  const [targetDrafts, setTargetDrafts] = useState<Record<number, string>>({});
 
   async function fetchData() {
     const res = await api.get<DashboardData>(`/dashboard?period=week`);

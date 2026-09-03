@@ -1,30 +1,27 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import api from "@/lib/api";
 import type { Store, Design, Goal, DailyGoalStat, Category } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { ArrowLeft, Globe, Store as StoreIcon, User, CircleCheck, Pin, Calendar, Trash2, Pencil } from "lucide-react";
+import { ArrowLeft, Globe, Store as StoreIcon, User, Pin, Calendar, Trash2 } from "lucide-react";
 import { useBreadcrumb } from "@/context/BreadcrumbContext";
 import { ExternalLink, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { EditDesignDialog } from "@/components/edit-design-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CreateDailyGoalDialog } from "@/components/create-daily-goal-dialog";
+import { CreateGoalDialog } from "@/components/create-goal-dialog";
 import {
-    DropdownMenu, DropdownMenuGroup, DropdownMenuContent, DropdownMenuTrigger,
-    DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuCheckboxItem,
-    DropdownMenuLabel, DropdownMenuSeparator,
+    DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
+    DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Search, PackageOpen, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { DailyGoalsList } from "@/components/daily-goals-list";
+import { CampaignsList } from "@/components/campaigns-list";
 interface StoreDetailData {
     store: Store;
     period: string;
@@ -34,21 +31,17 @@ interface StoreDetailData {
     designs: Design[];
 }
 
-const SCOPE_ICON = { GLOBAL: Globe, STORE: StoreIcon, OWNER: User } as const;
-
 export default function StoreDetail() {
     const [sortBy, setSortBy] = useState<"date" | "name" | "category">("date");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [categoryFilter, setCategoryFilter] = useState<string>("all");
     const [statusTab, setStatusTab] = useState<"pending" | "completed">("pending");
     const [page, setPage] = useState(1);
     const PAGE_SIZE = 10;
     const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<StoreDetailData | null>(null);
     const [period, setPeriod] = useState<"week" | "month" | "year">("week");
-    const [targetDrafts, setTargetDrafts] = useState<Record<number, string>>({});
     const [searchQuery, setSearchQuery] = useState("");
     const { setBreadcrumb } = useBreadcrumb();
     const navigate = useNavigate();
@@ -63,9 +56,6 @@ export default function StoreDetail() {
             await api.put(`/designs/${design.id}`, { isCompleted: !design.isCompleted });
             fetchData();
         } catch {
-            // Design di halaman ini selalu punya storeId (difilter by store),
-            // jadi ownerId udah otomatis ke-derive dari store — 422 di sini gak wajar,
-            // tapi tetep di-guard biar gak silent-fail kalau ada kasus aneh.
             alert("Gagal update status — pastikan design ini punya owner (lewat store).");
         }
     }
@@ -103,10 +93,7 @@ export default function StoreDetail() {
         return () => setBreadcrumb(null);
     }, [data]);
 
-    async function handleUpdateDailyGoalTarget(dailyGoalId: number, currentTarget: number | null) {
-        const draft = targetDrafts[dailyGoalId];
-        const value = Number(draft);
-        if (!draft || !value || value === currentTarget) return;
+    async function handleUpdateDailyGoalTarget(dailyGoalId: number, value: number) {
         await api.put(`/daily-goals/${dailyGoalId}/target`, { targetCount: value });
         fetchData();
     }
@@ -114,6 +101,11 @@ export default function StoreDetail() {
         await api.put(`/goals/${goalId}/pin`);
         fetchData();
     }
+    async function handleDeleteDailyGoal(dailyGoalId: number) {
+        await api.delete(`/daily-goals/${dailyGoalId}`);
+        fetchData();
+    }
+
     async function handleDeleteGoal(goalId: number) {
         await api.delete(`/goals/${goalId}`);
         fetchData();
@@ -122,24 +114,6 @@ export default function StoreDetail() {
     async function handleDeleteDesign(designId: number) {
         await api.delete(`/designs/${designId}`);
         fetchData();
-    }
-    function CircularProgress({ percent }: { percent: number }) {
-        const radius = 18;
-        const circumference = 2 * Math.PI * radius;
-        const offset = circumference - (percent / 100) * circumference;
-        return (
-            <div className="relative h-12 w-12">
-                <svg viewBox="0 0 48 48" className="h-12 w-12 -rotate-90">
-                    <circle cx="24" cy="24" r={radius} fill="none" stroke="var(--muted)" strokeWidth="4" />
-                    <circle
-                        cx="24" cy="24" r={radius} fill="none"
-                        stroke="var(--chart-2)" strokeWidth="4" strokeLinecap="round"
-                        strokeDasharray={circumference} strokeDashoffset={offset}
-                    />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium">{percent}%</span>
-            </div>
-        );
     }
 
     function ChartTooltip({ active, payload, label }: any) {
@@ -235,97 +209,30 @@ export default function StoreDetail() {
                 <Separator />
                 {/* Daily Goals + Goals, UI SAMA PERSIS kayak Dashboard */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="flex flex-col gap-8">
-                        <span className="text-lg font-semibold text-foreground">Daily Goals</span>
-                        <div className="flex flex-col h-72 gap-4 overflow-y-auto pb-2 scrollbar-none scroll-fade">
-
-                            {data.dailyGoalStats.length === 0 && (
-                                <p className="text-sm text-muted-foreground">Belum ada daily goal.</p>
-                            )}
-                            {data.dailyGoalStats.map((s) => {
-                                const Icon = SCOPE_ICON[s.scope as keyof typeof SCOPE_ICON] ?? Globe;
-                                const isAchievedToday = s.targetCount !== null && s.achievedToday >= s.targetCount;
-                                return (
-                                    <div key={s.dailyGoalId} className="flex w-full shrink-0 flex-col border rounded-lg">
-                                        <div className="flex items-center justify-between gap-3 rounded-t-lg bg-card px-4 py-2">
-                                            <div className="flex items-center gap-2">
-                                                <Icon className="h-4 w-4 text-muted-foreground" />
-                                                <span className="text-sm">{s.displayName}</span>
-                                                {isAchievedToday && <Badge className="bg-chart-2 text-white">Complete</Badge>}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center justify-center rounded-md ring ring-foreground/10">
-                                                    <div className="h-8 w-12 text-sm flex items-center px-2.5 py-1 justify-center rounded-l-md">{s.achievedToday}</div>
-                                                    <div className="h-8 w-8 text-sm flex items-center px-2.5 py-1 justify-center border-x">/</div>
-                                                    <InputGroup className="h-8 w-12 rounded-none! ring-0! outline-0! border-0! rounded-r-md! bg-background!">
-                                                        <InputGroupInput
-                                                            min={1}
-                                                            value={targetDrafts[s.dailyGoalId] ?? String(s.targetCount ?? "")}
-                                                            onChange={(e) => setTargetDrafts((prev) => ({ ...prev, [s.dailyGoalId]: e.target.value }))}
-                                                            onBlur={() => handleUpdateDailyGoalTarget(s.dailyGoalId, s.targetCount)}
-                                                            onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
-                                                            className="text-center"
-                                                        />
-                                                    </InputGroup>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-xs flex items-center justify-between p-3">
-                                            <p className="text-muted-foreground">{s.achievedDays}/{s.totalDays} days achieved</p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold text-foreground">Daily Goals</span>
+                            <CreateDailyGoalDialog stores={[]} owners={[]} lockedStoreId={data.store.id} onCreated={fetchData} />
                         </div>
+                        <DailyGoalsList
+                            dailyGoalStats={data.dailyGoalStats}
+                            onUpdateTarget={handleUpdateDailyGoalTarget}
+                            onDelete={handleDeleteDailyGoal}
+                            compact
+                        />
                     </div>
 
-                    <div className="flex flex-col gap-8">
-                        <span className="text-lg font-semibold text-foreground">Goals</span>
-                        <div className="flex flex-col h-72 gap-4 overflow-y-auto pb-2 scrollbar-none scroll-fade">
-
-                            {data.goals.length === 0 && (
-                                <p className="text-sm text-muted-foreground">Belum ada goal aktif.</p>
-                            )}
-                            {[...data.goals]
-                                .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
-                                .map((g) => {
-                                    const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
-                                    return (
-                                        <div key={g.id} className="flex w-full shrink-0 flex-col border rounded-lg">
-                                            <div className="flex items-center justify-between gap-3 px-4 py-3">
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    {g.store ? (
-                                                        <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
-                                                    ) : g.scope === "OWNER" ? (
-                                                        <User className="h-4 w-4 text-muted-foreground" />
-                                                    ) : (
-                                                        <Globe className="h-4 w-4 text-muted-foreground" />
-                                                    )}
-                                                    <span className="text-sm font-medium truncate">{g.name}</span>
-                                                </div>
-                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleTogglePinGoal(g.id)}>
-                                                    <Pin className={`h-4 w-4 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />
-                                                </Button>
-                                            </div>
-                                            <div className="flex items-center gap-3 border-y bg-card px-4 py-3">
-                                                <CircularProgress percent={percent} />
-                                                <span className="text-sm font-medium">{g.completedCount} / {g.targetCount}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between px-4 py-2">
-                                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                    <Calendar className="h-3.5 w-3.5" />
-                                                    {g.deadline
-                                                        ? new Date(g.deadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
-                                                        : "No deadline"}
-                                                </div>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteGoal(g.id)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold text-foreground">Campaigns</span>
+                            <CreateGoalDialog stores={[]} owners={[]} lockedStoreId={data.store.id} onCreated={fetchData} />
                         </div>
+                        <CampaignsList
+                            goals={data.goals}
+                            onTogglePin={handleTogglePinGoal}
+                            onDelete={handleDeleteGoal}
+                            compact
+                        />
                     </div>
                 </div>
 

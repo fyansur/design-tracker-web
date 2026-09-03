@@ -27,7 +27,7 @@ export function RecentActivityFeed({
   if (compact) {
     return (
       <ScrollArea className={height}>
-            <div className="flex flex-col bg-card p-3 rounded-xl">
+      <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
           {activities.map((a) => (
             <div key={a.id} className="flex items-start gap-2 py-1.5 border-b last:border-0">
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${EVENT_DOT_COLOR[a.event] ?? "bg-muted-foreground"}`} />

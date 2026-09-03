@@ -41,7 +41,7 @@ export function DailyGoalsList({
 
     if (compact) {
         return (
-            <div className="flex flex-col bg-card p-3 rounded-xl">
+            <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
                 {dailyGoalStats.map((s) => (
                     <DailyGoalRow key={s.dailyGoalId} stat={s} onUpdateTarget={onUpdateTarget} onDelete={onDelete} />
                 ))}

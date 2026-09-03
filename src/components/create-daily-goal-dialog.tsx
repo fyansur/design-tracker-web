@@ -11,11 +11,11 @@ import { Plus } from "lucide-react";
 import type { Store, Owner } from "@/types";
 
 export function CreateDailyGoalDialog({
-  stores, owners, onCreated,
-}: { stores: Store[]; owners: Owner[]; onCreated: () => void }) {
+  stores, owners, onCreated, lockedStoreId,
+}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
   const [open, setOpen] = useState(false);
-  const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">("GLOBAL");
-  const [storeId, setStoreId] = useState("");
+  const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">(lockedStoreId ? "STORE" : "GLOBAL");
+  const [storeId, setStoreId] = useState(lockedStoreId ? String(lockedStoreId) : "");
   const [ownerId, setOwnerId] = useState("");
   const [targetCount, setTargetCount] = useState(5);
   const [error, setError] = useState("");
@@ -25,9 +25,9 @@ export function CreateDailyGoalDialog({
     setError("");
     try {
       await api.post("/daily-goals", {
-        scope,
-        storeId: scope === "STORE" ? Number(storeId) : undefined,
-        ownerId: scope === "OWNER" ? Number(ownerId) : undefined,
+        scope: lockedStoreId ? "STORE" : scope,
+        storeId: lockedStoreId ?? (scope === "STORE" ? Number(storeId) : undefined),
+        ownerId: !lockedStoreId && scope === "OWNER" ? Number(ownerId) : undefined,
         targetCount,
       });
       setOpen(false);
@@ -45,39 +45,41 @@ export function CreateDailyGoalDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Buat Daily Goal Baru</DialogTitle>
+          <DialogTitle>Create Daily Goal</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="flex flex-col gap-2">
-            <Label>Scope</Label>
-            <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="GLOBAL">Global</SelectItem>
-                <SelectItem value="STORE">Store</SelectItem>
-                <SelectItem value="OWNER">Owner</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {!lockedStoreId && (
+            <div className="flex flex-col gap-2">
+              <Label>Scope</Label>
+              <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GLOBAL">Global</SelectItem>
+                  <SelectItem value="STORE">Store</SelectItem>
+                  <SelectItem value="OWNER">Owner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {scope === "STORE" && (
+          {!lockedStoreId && scope === "STORE" && (
             <div className="flex flex-col gap-2">
               <Label>Store</Label>
               <Select value={storeId} onValueChange={(v) => setStoreId(v ?? "")}>
-                <SelectTrigger><SelectValue placeholder="Pilih store" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select a store" /></SelectTrigger>
                 <SelectContent>
                   {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           )}
-          {scope === "OWNER" && (
+          {!lockedStoreId && scope === "OWNER" && (
             <div className="flex flex-col gap-2">
               <Label>Owner</Label>
               <Select value={ownerId} onValueChange={(v) => setOwnerId(v ?? "")}>
-                <SelectTrigger><SelectValue placeholder="Pilih owner" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select an owner" /></SelectTrigger>
                 <SelectContent>
                   {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
                 </SelectContent>
@@ -91,7 +93,7 @@ export function CreateDailyGoalDialog({
           </div>
 
           <DialogFooter>
-            <Button type="submit">Buat Daily Goal</Button>
+            <Button type="submit">Create Daily Goal</Button>
           </DialogFooter>
         </form>
       </DialogContent>

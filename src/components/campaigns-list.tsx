@@ -34,7 +34,7 @@ export function CampaignsList({
 
   if (compact) {
     return (
-      <div className="flex flex-col bg-card p-3 rounded-xl">
+      <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
         {sorted.map((g) => {
           const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
           const ScopeIcon = g.scope === "STORE" ? Store : g.scope === "OWNER" ? User : Globe;
@@ -42,9 +42,6 @@ export function CampaignsList({
             <div key={g.id} className="flex items-center justify-between gap-2 py-1.5 text-sm border-b last:border-0">
               <div className="flex items-center gap-1.5 min-w-0">
                 <ScopeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                {g.scope === "STORE" && g.store && (
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: g.store.color }} />
-                )}
                 <span className="truncate">{g.name}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">

@@ -10,29 +10,36 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import type { Store, Owner } from "@/types";
 import { Plus } from "lucide-react";
 
-
 export function CreateGoalDialog({
-    stores, owners, onCreated,
-}: { stores: Store[]; owners: Owner[]; onCreated: () => void }) {
+    stores, owners, onCreated, lockedStoreId,
+}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
-    const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">("GLOBAL");
-    const [storeId, setStoreId] = useState("");
+    const [scope, setScope] = useState<"GLOBAL" | "STORE" | "OWNER">(lockedStoreId ? "STORE" : "GLOBAL");
+    const [storeId, setStoreId] = useState(lockedStoreId ? String(lockedStoreId) : "");
     const [ownerId, setOwnerId] = useState("");
     const [targetCount, setTargetCount] = useState(10);
 
+    const [error, setError] = useState("");
+
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
-        await api.post("/goals", {
-            name: scope === "GLOBAL" ? name : undefined,
-            scope,
-            storeId: scope === "STORE" ? Number(storeId) : undefined,
-            ownerId: scope === "OWNER" ? Number(ownerId) : undefined,
-            targetCount,
-        });
-        setOpen(false);
-        setName("");
-        onCreated(); // trigger refetch di parent (aside)
+        setError("");
+        try {
+            const resolvedScope = lockedStoreId ? "STORE" : scope;
+            await api.post("/goals", {
+                name: resolvedScope === "GLOBAL" ? name : undefined,
+                scope: resolvedScope,
+                storeId: lockedStoreId ?? (scope === "STORE" ? Number(storeId) : undefined),
+                ownerId: !lockedStoreId && scope === "OWNER" ? Number(ownerId) : undefined,
+                targetCount,
+            });
+            setOpen(false);
+            setName("");
+            onCreated();
+        } catch (err: any) {
+            setError(err.response?.data?.message ?? "Gagal membuat campaign");
+        }
     }
 
     return (
@@ -42,43 +49,45 @@ export function CreateGoalDialog({
             </Button>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Buat Goal Baru</DialogTitle>
+                    <DialogTitle>Create Campaign</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                        <Label>Scope</Label>
-                        <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="GLOBAL">Global</SelectItem>
-                                <SelectItem value="STORE">Store</SelectItem>
-                                <SelectItem value="OWNER">Owner</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {scope === "GLOBAL" && (
+                    {!lockedStoreId && (
                         <div className="flex flex-col gap-2">
-                            <Label>Nama Goal</Label>
+                            <Label>Scope</Label>
+                            <Select value={scope} onValueChange={(v) => v && setScope(v as typeof scope)}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="GLOBAL">Global</SelectItem>
+                                    <SelectItem value="STORE">Store</SelectItem>
+                                    <SelectItem value="OWNER">Owner</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    {(lockedStoreId ? false : scope === "GLOBAL") && (
+                        <div className="flex flex-col gap-2">
+                            <Label>Campaign Name</Label>
                             <Input value={name} onChange={(e) => setName(e.target.value)} required />
                         </div>
                     )}
-                    {scope === "STORE" && (
+                    {!lockedStoreId && scope === "STORE" && (
                         <div className="flex flex-col gap-2">
                             <Label>Store</Label>
                             <Select value={storeId} onValueChange={(v) => setStoreId(v ?? "")}>
-                                <SelectTrigger><SelectValue placeholder="Pilih store" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select a store" /></SelectTrigger>
                                 <SelectContent>
                                     {stores.map((s) => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                     )}
-                    {scope === "OWNER" && (
+                    {!lockedStoreId && scope === "OWNER" && (
                         <div className="flex flex-col gap-2">
                             <Label>Owner</Label>
                             <Select value={ownerId} onValueChange={(v) => setOwnerId(v ?? "")}>
-                                <SelectTrigger><SelectValue placeholder="Pilih owner" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select an owner" /></SelectTrigger>
                                 <SelectContent>
                                     {owners.map((o) => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
                                 </SelectContent>
@@ -89,10 +98,12 @@ export function CreateGoalDialog({
                     <div className="flex flex-col gap-2">
                         <Label>Target Count</Label>
                         <Input type="number" min={1} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} />
+                        
+                    {error && <p className="text-sm text-destructive">{error}</p>}
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit">Buat Goal</Button>
+                        <Button type="submit">Create Campaign</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

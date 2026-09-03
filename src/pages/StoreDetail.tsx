@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import api from "@/lib/api";
-import type { Store, Design, Goal, DailyGoalStat, Category } from "@/types";
+import type { Store, Design, Goal, DailyGoalStat, Category, Owner } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import { Search, PackageOpen, ArrowUp, ArrowDown, ChevronDown } from "lucide-rea
 import { Separator } from "@/components/ui/separator";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
+import { DesignListSection } from "@/components/design-list-section";
 interface StoreDetailData {
     store: Store;
     period: string;
@@ -32,6 +33,8 @@ interface StoreDetailData {
 }
 
 export default function StoreDetail() {
+    const [stores, setStores] = useState<Store[]>([]);
+    const [owners, setOwners] = useState<Owner[]>([]);
     const [sortBy, setSortBy] = useState<"date" | "name" | "category">("date");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
@@ -73,6 +76,8 @@ export default function StoreDetail() {
 
     useEffect(() => {
         api.get<Category[]>("/categories").then((res) => setCategories(res.data));
+        api.get<Store[]>("/stores").then((res) => setStores(res.data));
+        api.get<Owner[]>("/owners").then((res) => setOwners(res.data));
     }, []);
 
     useEffect(() => {
@@ -178,7 +183,7 @@ export default function StoreDetail() {
 
                 {/* Chart */}
                 <div className="flex flex-row items-center justify-between gap-2">
-                    <span className="text-lg font-semibold text-foreground">Completed Designs</span>
+                    <span className="text-lg font-semibold text-foreground">Performance</span>
                     <Tabs value={period} onValueChange={(v) => v && setPeriod(v as typeof period)}>
                         <TabsList className="w-100">
                             <TabsTrigger className="w-1/3" value="week">7d</TabsTrigger>
@@ -238,167 +243,20 @@ export default function StoreDetail() {
 
                 <Separator />
                 {/* Designs — Table + search, buat scale ke ratusan item */}
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col bg-card p-6 rounded-xl">
                     {/* Row 1: Title + Tabs, sejajar */}
-                    <div className="flex flex-row items-center justify-between gap-2">
-                        <span className="text-lg font-semibold text-foreground">Designs</span>
-                        <Tabs value={statusTab} onValueChange={(v) => v && setStatusTab(v as typeof statusTab)}>
-                            <TabsList>
-                                <TabsTrigger value="pending">
-                                    Pending
-                                </TabsTrigger>
-                                <TabsTrigger value="completed">
-                                    Completed
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                    </div>
-
-                    {/* Row 2: Search + Filter Category */}
-                    {/* Row: Search + Sort */}
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                placeholder="Search designs..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger render={<Button variant="outline" className="w-28 justify-between" />}>
-                                {sortBy === "date" ? "Date" : sortBy === "name" ? "Name" : "Category"}
-                                <ChevronDown className="h-4 w-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => v && setSortBy(v as typeof sortBy)}>
-                                    <DropdownMenuRadioItem value="date">Date</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="name">Name</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="category">Category</DropdownMenuRadioItem>
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <Button
-                            variant="outline" size="icon"
-                            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-                        >
-                            {sortDir === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                        </Button>
-                    </div>
-
-                    {/* Row: Filter by Category */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-muted-foreground">Filter by</span>
-                        {storeCategories.length === 0 && (
-                            <span className="text-sm text-muted-foreground">No categories available.</span>
-                        )}
-                        {storeCategories.map((c) => {
-                            const isActive = selectedCategoryIds.includes(c.id);
-                            return (
-                                <button
-                                    key={c.id}
-                                    type="button"
-                                    onClick={() => toggleCategoryFilter(c.id)}
-                                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${isActive
-                                        ? "bg-primary text-primary-foreground border-primary"
-                                        : "bg-transparent text-muted-foreground hover:bg-muted"
-                                        }`}
-                                >
-                                    {c.name}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Parent wrapper buat semua card */}
-                    <div className="flex flex-col gap-3 p-4 bg-card rounded-xl">
-                        {pagedDesigns.length === 0 && (
-                            <Empty>
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        {searchQuery || selectedCategoryIds.length > 0 ? <Search /> : <PackageOpen />}
-                                    </EmptyMedia>
-                                    <EmptyTitle>
-                                        {searchQuery || selectedCategoryIds.length > 0 ? "No results found" : `No designs ${statusTab} yet`}
-                                    </EmptyTitle>
-                                    <EmptyDescription>
-                                        {searchQuery || selectedCategoryIds.length > 0
-                                            ? "Try changing the search keywords or filtering by category."
-                                            : statusTab === "pending"
-                                                ? "New designs that haven't been completed will appear here."
-                                                : "Designs that have been completed will appear here."}
-                                    </EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                        {pagedDesigns.map((d) => (
-                            <div key={d.id} className="flex flex-col gap-3 rounded-lg border px-4 py-4 bg-background">
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500" />
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-semibold truncate">{d.name}</span>
-                                            {d.category && <span className="text-xs text-muted-foreground">{d.category.name}</span>}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1 shrink-0">
-                                        <EditDesignDialog design={d} categories={categories} onUpdated={fetchData} />
-                                        {d.referenceUrl && (
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(d.referenceUrl!, "_blank")}>
-                                                <ExternalLink className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                        {statusTab === "pending" && (
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleTogglePinDesign(d.id)}>
-                                                <Pin className={`h-4 w-4 ${d.isPinned ? "fill-current text-chart-2" : ""}`} />
-                                            </Button>
-                                        )}
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteDesign(d.id)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between gap-2 border-t pt-3">
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1.5">
-                                            <Calendar className="h-3.5 w-3.5" /> Created {formatDateTime(d.createdAt)}
-                                        </span>
-                                        <span className="flex items-center gap-1.5">
-                                            <Clock className="h-3.5 w-3.5" /> Last updated {formatDateTime(d.updatedAt)}
-                                        </span>
-                                    </div>
-                                    {d.isCompleted ? (
-                                        <Button size="sm" variant="secondary" onClick={() => handleToggleComplete(d)}>
-                                            Completed
-                                        </Button>
-                                    ) : (
-                                        <Button size="sm" onClick={() => handleToggleComplete(d)}>
-                                            Mark as Complete
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center justify-between rounded-lg border px-4 py-3 text-sm text-muted-foreground">
-                        <span>
-                            {statusTab === "completed" ? "Completed" : "Pending"}: {filteredDesigns.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filteredDesigns.length)} of {filteredDesigns.length}
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <span>{page} / {totalPages}</span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                    <DesignListSection
+                        title={`Designs in ${data.store.name}`}
+                        designs={data.designs}
+                        categories={categories}
+                        stores={stores}
+                        owners={owners}
+                        sortOptions={["date", "name", "category"]}
+                        onToggleComplete={handleToggleComplete}
+                        onTogglePin={handleTogglePinDesign}
+                        onDelete={handleDeleteDesign}
+                        onUpdated={fetchData}
+                    />
                 </div>
             </div >
         </div>

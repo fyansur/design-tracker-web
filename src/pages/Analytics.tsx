@@ -46,7 +46,8 @@ export default function Analytics() {
       <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
 
         <div className="flex flex-col gap-4 md:gap-6">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-semibold text-foreground">Performance</span>
             <Tabs value={period} onValueChange={(v) => v && setPeriod(v as typeof period)}>
               <TabsList className="w-64">
                 <TabsTrigger className="w-1/3" value="week">7d</TabsTrigger>

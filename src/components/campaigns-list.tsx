@@ -41,7 +41,7 @@ export function CampaignsList({
           return (
             <div key={g.id} className="flex items-center justify-between gap-2 py-1.5 text-sm border-b last:border-0">
               <div className="flex items-center gap-1.5 min-w-0">
-                <ScopeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <ScopeIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="truncate">{g.name}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">

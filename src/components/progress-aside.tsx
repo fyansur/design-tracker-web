@@ -78,7 +78,7 @@ export function ProgressAside() {
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-semibold text-foreground">Recent Activity</span>
-        <RecentActivityFeed activities={data.recentActivities} compact height="h-56" />
+        <RecentActivityFeed activities={data.recentActivities} compact height="h-100" />
       </div>
     </div>
   );

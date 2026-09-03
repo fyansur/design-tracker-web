@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
-import type { DashboardData } from "../types";
+import type { DashboardData, Store } from "../types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { Tooltip, ResponsiveContainer } from "recharts";
 import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TodayStatsCards } from "@/components/today-stats-cards";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
 import { RecentActivityFeed } from "@/components/recent-activity-feed";
+import { DesignsDistributionCard } from "@/components/designs-distribution-card";
+import { QuickActionsCard } from "@/components/quick-actions-card";
+import type { Owner } from "@/types";
 
 const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 const STATUS_COLOR = {
@@ -34,8 +37,9 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 export default function Dashboard() {
-  const [distributionTab, setDistributionTab] = useState<"store" | "owner">("store");
   const [data, setData] = useState<DashboardData | null>(null);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [owners, setOwners] = useState<Owner[]>([]);
 
   async function fetchData() {
     const res = await api.get<DashboardData>(`/dashboard?period=week`);
@@ -67,6 +71,11 @@ export default function Dashboard() {
     await api.delete(`/goals/${goalId}`);
     fetchData();
   }
+
+  useEffect(() => {
+    api.get<Owner[]>("/owners").then((res) => setOwners(res.data));
+    api.get<Store[]>("/stores").then((res) => setStores(res.data));
+  }, []);
 
   if (!data) return <p>Loading...</p>;
   return (
@@ -137,83 +146,27 @@ export default function Dashboard() {
               </Card>
 
               {/* Pie chart */}
-              <Card className="h-fit">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle>Designs Distribution</CardTitle>
-                  <Tabs value={distributionTab} onValueChange={(v) => v && setDistributionTab(v as typeof distributionTab)}>
-                    <TabsList>
-                      <TabsTrigger value="store">Store</TabsTrigger>
-                      <TabsTrigger value="owner">Owner</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </CardHeader>
-                <CardContent>
-                  {(() => {
-                    const items =
-                      distributionTab === "store"
-                        ? data.ranking.map((r) => ({ key: r.storeId, name: r.name, count: r.completedCount, color: r.color }))
-                        : data.rankingByOwner.map((o, i) => ({ key: o.ownerId, name: o.name, count: o.completedCount, color: OWNER_COLORS[i % OWNER_COLORS.length] }));
-
-                    if (items.length === 0 || data.completedCount === 0) {
-                      return <p className="text-sm text-muted-foreground">No data available.</p>;
-                    }
-
-                    return (
-                      <div className="flex items-center gap-4">
-                        <div className="relative h-40 w-40 shrink-0">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={items}
-                                dataKey="count"
-                                nameKey="name"
-                                innerRadius={55}
-                                outerRadius={75}
-                                paddingAngle={2}
-                                stroke="none"
-                              >
-                                {items.map((item) => (
-                                  <Cell key={item.key} fill={item.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                contentStyle={{
-                                  backgroundColor: "var(--popover)",
-                                  border: "1px solid var(--border)",
-                                  borderRadius: "8px",
-                                  fontSize: "12px",
-                                }}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-bold text-foreground">{data.completedCount}</span>
-                            <span className="text-xs text-muted-foreground">Designs</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-1 flex-col gap-2 min-w-0">
-                          {items.map((item) => {
-                            const pct = Math.round((item.count / data.completedCount) * 100);
-                            return (
-                              <div key={item.key} className="flex items-center justify-between gap-2 text-sm">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                                  <span className="truncate">{item.name}</span>
-                                </div>
-                                <span className="font-medium">{pct}%</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <DesignsDistributionCard
+                  ranking={data.ranking}
+                  rankingByOwner={data.rankingByOwner}
+                  completedCount={data.completedCount}
+                />
+                <Card className="h-fit">
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>Latest activities in your account.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RecentActivityFeed activities={data.recentActivities} />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {/* ==== KOLOM KANAN ==== */}
             <div className="flex flex-col gap-4 md:gap-6">
+              <QuickActionsCard stores={stores} owners={owners} onCreated={fetchData} />
               <DailyGoalsList
                 dailyGoalStats={data.dailyGoalStats}
                 onUpdateTarget={handleUpdateDailyGoalTarget}
@@ -225,15 +178,6 @@ export default function Dashboard() {
                 onDelete={handleDeleteGoal}
                 layout="carousel"
               />
-              <Card className="h-fit">
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>Latest activities in your account.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentActivityFeed activities={data.recentActivities} />
-                </CardContent>
-              </Card>
             </div>
 
           </div>

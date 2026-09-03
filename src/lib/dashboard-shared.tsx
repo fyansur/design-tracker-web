@@ -74,7 +74,7 @@ export function ChangeBadge({ pct }: { pct: number | null }) {
     const Icon = isUp ? TrendingUp : TrendingDown;
     return (
         <span className={`flex items-center gap-1 text-xs ${isUp ? "text-green-500" : "text-red-500"}`}>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-4 w-4" />
             {isUp ? "+" : ""}{pct}%
         </span>
     );
@@ -90,7 +90,7 @@ export const EVENT_DOT_COLOR: Record<string, string> = {
 export function CircularProgress({ percent, size = "md" }: { percent: number; size?: "sm" | "md" }) {
     const radius = size === "sm" ? 16 : 34;
     const box = size === "sm" ? 40 : 80;
-    const strokeWidth = size === "sm" ? 3.5 : 6;
+    const strokeWidth = size === "sm" ? 4 : 6;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (percent / 100) * circumference;
     const dim = size === "sm" ? "h-10 w-10" : "h-20 w-20";

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parseColor } from "react-aria-components";
 import api from "@/lib/api";
-import type { Owner } from "@/types";
+import type { Owner, Store } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
@@ -14,19 +16,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ColorPicker, ColorSwatchPicker, ColorSwatchPickerItem, ColorSwatch } from "@/components/ui/color";
 import { Store as StoreIcon, User, CircleAlert, Check, RotateCcw, Plus } from "lucide-react";
-import { createStoreSchema, CUSTOM_OWNER_VALUE, type CreateStoreForm } from "@/lib/validation";
-
+import { buildCreateStoreSchema, CUSTOM_OWNER_VALUE, type CreateStoreForm } from "@/lib/validation";
 const PRESET_COLORS = ["#f54900", "#3b82f6", "#22c55e", "#eab308", "#ec4899", "#8b5cf6", "#06b6d4", "#ef4444"];
 
 export function CreateStoreDialog({
-  owners, onCreated,
-}: { owners: Owner[]; onCreated: () => void }) {
+  stores, owners, onCreated, trigger,
+}: { stores: Store[]; owners: Owner[]; onCreated: () => void; trigger?: ReactNode }) {
+  
   const [open, setOpen] = useState(false);
   const [isCustomOwnerSelected, setIsCustomOwnerSelected] = useState(false);
   const [serverError, setServerError] = useState("");
 
+  const schema = useMemo(() => buildCreateStoreSchema(stores.map((s) => s.name)), [stores]);
+
   const form = useForm<CreateStoreForm>({
-    resolver: zodResolver(createStoreSchema),
+    resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: { name: "", owner_id: "", owner_name: "", color: "#f54900" },
   });
 
@@ -67,9 +72,13 @@ export function CreateStoreDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button onClick={() => handleOpenChange(true)}>
-        <Plus className="h-4 w-4" /> Add Store
-      </Button>
+      {trigger ? (
+        <div onClick={() => handleOpenChange(true)}>{trigger}</div>
+      ) : (
+        <Button onClick={() => handleOpenChange(true)}>
+          <Plus className="h-4 w-4" /> Add Store
+        </Button>
+      )}
 
       <DialogContent showCloseButton={false}>
         <DialogHeader><DialogTitle>Add New Store</DialogTitle></DialogHeader>
@@ -84,7 +93,7 @@ export function CreateStoreDialog({
                 <FieldLabel>Name</FieldLabel>
                 <FieldContent>
                   <InputGroup>
-                    <InputGroupAddon align="inline-start"><StoreIcon/></InputGroupAddon>
+                    <InputGroupAddon align="inline-start"><StoreIcon /></InputGroupAddon>
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>https://etsy.com/shop/</InputGroupText>
                     </InputGroupAddon>

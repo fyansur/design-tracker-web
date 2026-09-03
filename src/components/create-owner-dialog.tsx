@@ -1,56 +1,60 @@
-import { useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
+import type { Owner } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldLabel, FieldError } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CircleAlert, User, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ownerNameSchema, type OwnerNameForm } from "@/lib/validation";
+import { buildUniqueNameSchema, type UniqueNameForm } from "@/lib/validation";
 
-export function CreateOwnerDialog({ onCreated }: { onCreated: () => void }) {
+export function CreateOwnerDialog({
+  owners, onCreated, trigger,
+}: { owners: Owner[]; onCreated: () => void; trigger?: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [serverError, setServerError] = useState("");
 
-  const defaultValues: OwnerNameForm = { name: "" };
+  const schema = useMemo(() => buildUniqueNameSchema(owners.map((o) => o.name)), [owners]);
+  const defaultValues: UniqueNameForm = { name: "" };
 
-  const form = useForm<OwnerNameForm>({
-    resolver: zodResolver(ownerNameSchema),
+  const form = useForm<UniqueNameForm>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues,
   });
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
     form.reset(defaultValues);
-    setServerError("");
   }
 
-  async function onSubmit(values: OwnerNameForm) {
-    setServerError("");
+  async function onSubmit(values: UniqueNameForm) {
     try {
       await api.post("/owners", values);
       setOpen(false);
       onCreated();
     } catch {
-      setServerError("Failed to add owner (name may already be in use)");
+      form.setError("name", { type: "server", message: "This name is already in use" });
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button size="icon" className="h-8 w-8" onClick={() => handleOpenChange(true)}>
-        <Plus className="h-4 w-4" />
-      </Button>
+      {trigger ? (
+        <div onClick={() => handleOpenChange(true)}>{trigger}</div>
+      ) : (
+        <Button size="icon" className="h-8 w-8" onClick={() => handleOpenChange(true)}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
 
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Add New Owner</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-
           <Controller
             name="name"
             control={form.control}

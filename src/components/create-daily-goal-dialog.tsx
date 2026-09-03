@@ -60,7 +60,7 @@ export function CreateDailyGoalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleOpenChange(true)}>
+      <Button size="icon" className="h-6 w-6 rounded-sm" onClick={() => handleOpenChange(true)}>
         <Plus className="h-4 w-4" />
       </Button>
 

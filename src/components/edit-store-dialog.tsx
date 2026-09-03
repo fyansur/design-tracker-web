@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parseColor } from "react-aria-components";
@@ -12,13 +12,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ColorPicker, ColorSwatchPicker, ColorSwatchPickerItem, ColorSwatch } from "@/components/ui/color";
 import { Store as StoreIcon, User, CircleAlert, Check, Pencil } from "lucide-react";
-import { editStoreSchema, type EditStoreForm } from "@/lib/validation";
+import { buildCreateStoreSchema, editStoreSchema, type EditStoreForm } from "@/lib/validation";
 
 const PRESET_COLORS = ["#f54900", "#3b82f6", "#22c55e", "#eab308", "#ec4899", "#8b5cf6", "#06b6d4", "#ef4444"];
 
 export function EditStoreDialog({
-    store, owners, onUpdated,
-}: { store: Store; owners: Owner[]; onUpdated: () => void }) {
+  store, stores, owners, onUpdated,
+}: { store: Store; stores: Store[]; owners: Owner[]; onUpdated: () => void }) {
+  const schema = useMemo(() => buildCreateStoreSchema(stores.map((s) => s.name), store.name), [stores, store.name]);
+  
     const [open, setOpen] = useState(false);
     const [serverError, setServerError] = useState("");
 
@@ -57,7 +59,7 @@ export function EditStoreDialog({
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenChange(true)}>
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="h-4 w-4" />
             </Button>
 
             <DialogContent showCloseButton={false}>

@@ -95,7 +95,7 @@ export default function Layout() {
             <Outlet />
           </main>
           {!hideAside &&
-            <aside className="bg-sidebar hidden w-1/4 shrink-0 overflow-y-auto border-l px-4 lg:block [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
+            <aside className="p-8 bg-sidebar hidden w-1/4 shrink-0 overflow-y-auto border-l lg:block [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
               <ProgressAside />
             </aside>
           }

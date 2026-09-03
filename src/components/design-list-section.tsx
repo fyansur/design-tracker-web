@@ -13,7 +13,7 @@ import {
     ExternalLink, Pin, Calendar, Clock, Trash2,
 } from "lucide-react";
 import { EditDesignDialog } from "@/components/edit-design-dialog";
-
+import { AssignStoreDialog } from "@/components/assign-store-dialog";
 const PAGE_SIZE = 5;
 type SortKey = "date" | "name" | "category" | "store";
 
@@ -165,51 +165,74 @@ export function DesignListSection({
                         </EmptyHeader>
                     </Empty>
                 )}
-                {pagedDesigns.map((d) => (
-                    <div key={d.id} className="flex flex-col gap-3 rounded-lg border p-6 bg-background">
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col gap-2 min-w-0">
-                                <div className="flex flex-row items-center gap-2 min-w-0">
-                                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: d.store?.color ?? "var(--muted-foreground)" }} />
+                {pagedDesigns.map((d) => {
+                    const needsStoreAssignment = d.isCompleted && !d.storeId;
+                    return (
+                        <div key={d.id} className="flex flex-col gap-3 rounded-lg border p-6 bg-background">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex flex-col gap-2 min-w-0">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                    {needsStoreAssignment ? (
+                                        <span className="relative flex h-2.5 w-2.5 shrink-0">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                                            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                                            
+                                        </span>
+                                    ) : (
+                                        <>
+                                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.store?.color ?? "var(--muted-foreground)" }} /> 
+                                        
+                                        </>
+                                    )}
+                                        <span className="text-sm font-semibold truncate">{d.name}</span>
+                                        </div>
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-base font-semibold truncate">{d.name}</span>
+                                        <span className={`text-xs ${needsStoreAssignment ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
+                                            {d.store
+                                                ? `${d.store.name} (${d.owner?.name ?? "Unknown"})`
+                                                : d.owner
+                                                    ? `Please assign a store (${d.owner.name})`
+                                                    : "No store"}
+                                            {d.category ? ` · ${d.category.name}` : ""}
+                                        </span>
                                     </div>
                                 </div>
-                                <span className="text-xs text-muted-foreground">
-                                    {d.store?.name ?? "No store"}{d.category ? ` · ${d.category.name}` : ""}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                                <EditDesignDialog design={d} categories={categories} stores={stores} owners={owners} onUpdated={onUpdated} />
-                                {d.referenceUrl && (
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(d.referenceUrl!, "_blank")}>
-                                        <ExternalLink className="h-4 w-4" />
+                                
+                                <div className="flex items-center gap-1 shrink-0">
+                                    {needsStoreAssignment && (
+                                        <AssignStoreDialog design={d} stores={stores} owners={owners} onAssigned={onUpdated} />
+                                    )}
+                                    <EditDesignDialog design={d} categories={categories} stores={stores} owners={owners} onUpdated={onUpdated} />
+                                    {d.referenceUrl && (
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(d.referenceUrl!, "_blank")}>
+                                            <ExternalLink className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    {statusTab === "pending" && (
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onTogglePin(d.id)}>
+                                            <Pin className={`h-4 w-4 ${d.isPinned ? "fill-current text-chart-2" : ""}`} />
+                                        </Button>
+                                    )}
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(d.id)}>
+                                        <Trash2 className="h-4 w-4" />
                                     </Button>
-                                )}
-                                {statusTab === "pending" && (
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onTogglePin(d.id)}>
-                                        <Pin className={`h-4 w-4 ${d.isPinned ? "fill-current text-chart-2" : ""}`} />
-                                    </Button>
-                                )}
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(d.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center justify-between gap-2 border-t pt-3">
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> Created {formatDateTime(d.createdAt)}</span>
-                                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Updated {formatDateTime(d.updatedAt)}</span>
+                            <div className="flex items-center justify-between gap-2 border-t pt-3">
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> Created {formatDateTime(d.createdAt)}</span>
+                                    <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Updated {formatDateTime(d.updatedAt)}</span>
+                                </div>
+                                {d.isCompleted ? (
+                                    <Button size="sm" variant="secondary" onClick={() => onToggleComplete(d)}>Completed</Button>
+                                ) : (
+                                    <Button size="sm" onClick={() => onToggleComplete(d)}>Mark as Complete</Button>
+                                )}
                             </div>
-                            {d.isCompleted ? (
-                                <Button size="sm" variant="secondary" onClick={() => onToggleComplete(d)}>Completed</Button>
-                            ) : (
-                                <Button size="sm" onClick={() => onToggleComplete(d)}>Mark as Complete</Button>
-                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <div className="flex items-center justify-between rounded-lg border px-4 py-3 text-sm text-muted-foreground">

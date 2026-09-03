@@ -65,6 +65,7 @@ export default function Designs() {
 
     const form = useForm<CreateDesignForm>({
         resolver: zodResolver(createDesignSchema),
+        mode: "onChange",
         defaultValues: { name: "", storeId: "", categoryId: "", categoryName: "", referenceUrl: "" },
     });
 

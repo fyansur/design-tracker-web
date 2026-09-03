@@ -47,8 +47,9 @@ export function EditDesignDialog({
 
   const form = useForm<CreateDesignForm>({
     resolver: zodResolver(editDesignSchema),
+    mode: "onChange",
     defaultValues,
-  });
+});
 
   const selectedCategoryValue = form.watch("categoryId");
   const isCustomCategory = selectedCategoryValue === CUSTOM_CATEGORY_VALUE;

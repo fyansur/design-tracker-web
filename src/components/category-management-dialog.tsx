@@ -54,7 +54,11 @@ export function CategoryManagementDialog({
             <DialogContent>
                 <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
 
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
+                <form onSubmit={(e) => {
+                    e.stopPropagation();
+                    form.handleSubmit(onSubmit)(e);
+                }}
+                    className="flex flex-col gap-3">
                     {serverError && <p className="text-sm text-destructive">{serverError}</p>}
                     <Controller
                         name="name"

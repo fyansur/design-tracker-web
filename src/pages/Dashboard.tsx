@@ -46,6 +46,15 @@ export default function Dashboard() {
     const res = await api.get<DashboardData>(`/dashboard?period=week`);
     setData(res.data);
   }
+
+  async function refreshAll() {
+    await Promise.all([
+      fetchData(),
+      api.get<Owner[]>("/owners").then((res) => setOwners(res.data)),
+      api.get<Store[]>("/stores").then((res) => setStores(res.data)),
+    ]);
+  }
+
   const [yearChartData, setYearChartData] = useState<{ label: string; completed: number }[]>([]);
 
   useEffect(() => {
@@ -189,7 +198,7 @@ export default function Dashboard() {
 
             {/* ==== KOLOM KANAN ==== */}
             <div className="flex flex-col gap-4 md:gap-6">
-              <QuickActionsCard stores={stores} owners={owners} onCreated={fetchData} />
+              <QuickActionsCard stores={stores} owners={owners} onCreated={refreshAll} />
               <DailyGoalsList
                 dailyGoalStats={data.dailyGoalStats}
                 onUpdateTarget={handleUpdateDailyGoalTarget}

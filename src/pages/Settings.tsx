@@ -71,139 +71,143 @@ export default function Settings() {
   if (!user) return <LoadingScreen />;
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg p-4 md:p-8">
-      <span className="text-lg font-semibold text-foreground">Settings</span>
+    <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
+        <div className="flex flex-col gap-6 max-w-lg">
+          <span className="text-lg font-semibold text-foreground">Settings</span>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Profile</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={profileForm.handleSubmit(onSubmitProfile)} className="flex flex-col gap-4">
-            <Controller
-              name="name"
-              control={profileForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Name</FieldLabel>
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Profile</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={profileForm.handleSubmit(onSubmitProfile)} className="flex flex-col gap-4">
+                <Controller
+                  name="name"
+                  control={profileForm.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>Name</FieldLabel>
+                      <FieldContent>
+                        <InputGroup>
+                          <InputGroupAddon align="inline-start"><User className="size-3.5" /></InputGroupAddon>
+                          <InputGroupInput aria-invalid={fieldState.invalid} {...field} />
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                            <CircleAlert className="size-4" />
+                            <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                          </Alert>
+                        )}
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
+
+                <Field>
+                  <FieldLabel>Email</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><User className="size-3.5" /></InputGroupAddon>
-                      <InputGroupInput aria-invalid={fieldState.invalid} {...field} />
+                      <InputGroupAddon align="inline-start"><Mail className="size-3.5" /></InputGroupAddon>
+                      <InputGroupInput value={user?.email} disabled />
                     </InputGroup>
-                    {fieldState.invalid && (
-                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
-                        <CircleAlert className="size-4" />
-                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
-                      </Alert>
-                    )}
                   </FieldContent>
                 </Field>
-              )}
-            />
 
-            <Field>
-              <FieldLabel>Email</FieldLabel>
-              <FieldContent>
-                <InputGroup>
-                  <InputGroupAddon align="inline-start"><Mail className="size-3.5" /></InputGroupAddon>
-                  <InputGroupInput value={user?.email} disabled />
+                {profileMsg && <p className="text-sm text-muted-foreground">{profileMsg}</p>}
+                <Button type="submit" className="self-start">Save</Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Change Password</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={passwordForm.handleSubmit(onSubmitPassword)} className="flex flex-col gap-4">
+                <Controller
+                  name="currentPassword"
+                  control={passwordForm.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>Current Password</FieldLabel>
+                      <FieldContent>
+                        <InputGroup>
+                          <InputGroupAddon align="inline-start"><Lock className="size-3.5" /></InputGroupAddon>
+                          <InputGroupInput placeholder="Current Password" type="password" aria-invalid={fieldState.invalid} {...field} />
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                            <CircleAlert className="size-4" />
+                            <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                          </Alert>
+                        )}
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="newPassword"
+                  control={passwordForm.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>New Password</FieldLabel>
+                      <FieldContent>
+                        <InputGroup>
+                          <InputGroupAddon align="inline-start"><Lock className="size-3.5" /></InputGroupAddon>
+                          <InputGroupInput placeholder="New Password" type="password" aria-invalid={fieldState.invalid} {...field} />
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
+                            <CircleAlert className="size-4" />
+                            <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
+                          </Alert>
+                        )}
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
+
+                {passwordMsg && <p className="text-sm text-muted-foreground">{passwordMsg}</p>}
+                <Button type="submit" className="self-start">Change Password</Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Public Monitor</CardTitle></CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <InputGroup className="flex-1">
+                  <InputGroupAddon align="inline-start"><Link2 className="size-3.5" /></InputGroupAddon>
+                  <InputGroupInput value={monitorUrl} readOnly className="text-muted-foreground" />
                 </InputGroup>
-              </FieldContent>
-            </Field>
+                <Button variant="outline" size="icon" onClick={handleCopyMonitorUrl}>
+                  {copied ? <Check className="h-4 w-4 text-chart-2" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <Separator />
 
-            {profileMsg && <p className="text-sm text-muted-foreground">{profileMsg}</p>}
-            <Button type="submit" className="self-start">Save</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Change Password</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={passwordForm.handleSubmit(onSubmitPassword)} className="flex flex-col gap-4">
-            <Controller
-              name="currentPassword"
-              control={passwordForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Current Password</FieldLabel>
-                  <FieldContent>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start"><Lock className="size-3.5" /></InputGroupAddon>
-                      <InputGroupInput placeholder="Current Password" type="password" aria-invalid={fieldState.invalid} {...field} />
-                    </InputGroup>
-                    {fieldState.invalid && (
-                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
-                        <CircleAlert className="size-4" />
-                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
-                      </Alert>
-                    )}
-                  </FieldContent>
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="newPassword"
-              control={passwordForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>New Password</FieldLabel>
-                  <FieldContent>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start"><Lock className="size-3.5" /></InputGroupAddon>
-                      <InputGroupInput placeholder="New Password" type="password" aria-invalid={fieldState.invalid} {...field} />
-                    </InputGroup>
-                    {fieldState.invalid && (
-                      <Alert className="mt-3 flex p-2 rounded-md text-destructive bg-destructive/10 border-destructive/10">
-                        <CircleAlert className="size-4" />
-                        <AlertDescription><FieldError errors={[fieldState.error]} /></AlertDescription>
-                      </Alert>
-                    )}
-                  </FieldContent>
-                </Field>
-              )}
-            />
-
-            {passwordMsg && <p className="text-sm text-muted-foreground">{passwordMsg}</p>}
-            <Button type="submit" className="self-start">Change Password</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Public Monitor</CardTitle></CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <InputGroup className="flex-1">
-              <InputGroupAddon align="inline-start"><Link2 className="size-3.5" /></InputGroupAddon>
-              <InputGroupInput value={monitorUrl} readOnly className="text-muted-foreground" />
-            </InputGroup>
-            <Button variant="outline" size="icon" onClick={handleCopyMonitorUrl}>
-              {copied ? <Check className="h-4 w-4 text-chart-2" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-          <Separator />
-
-          <AlertDialog open={regenerateOpen} onOpenChange={setRegenerateOpen}>
-            <Button variant="outline" className="self-start gap-1.5" onClick={() => setRegenerateOpen(true)}>
-              <RotateCcw className="h-4 w-4" /> Regenerate Token
-            </Button>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Regenerate monitor link?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  The current link will stop working immediately. Anyone using the old link
-                  (embedded on a stream overlay, bookmarked, etc.) will lose access until you share the new one.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setRegenerateOpen(false)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleRegenerateToken}>Regenerate</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+              <AlertDialog open={regenerateOpen} onOpenChange={setRegenerateOpen}>
+                <Button variant="outline" className="self-start gap-1.5" onClick={() => setRegenerateOpen(true)}>
+                  <RotateCcw className="h-4 w-4" /> Regenerate Token
+                </Button>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Regenerate monitor link?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      The current link will stop working immediately. Anyone using the old link
+                      (embedded on a stream overlay, bookmarked, etc.) will lose access until you share the new one.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setRegenerateOpen(false)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRegenerateToken}>Regenerate</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

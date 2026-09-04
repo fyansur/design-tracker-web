@@ -132,22 +132,23 @@ export function DesignListSection({
                 )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Filter by</span>
-                {usedCategories.length === 0 && <span className="text-sm text-muted-foreground">No categories available.</span>}
-                {usedCategories.map((c) => {
-                    const isActive = selectedCategoryIds.includes(c.id);
-                    return (
-                        <button
-                            key={c.id} type="button" onClick={() => toggleCategoryFilter(c.id)}
-                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-transparent text-muted-foreground hover:bg-muted"
-                                }`}
-                        >
-                            {c.name}
-                        </button>
-                    );
-                })}
-            </div>
+            {usedCategories.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Filter by</span>
+                    {usedCategories.map((c) => {
+                        const isActive = selectedCategoryIds.includes(c.id);
+                        return (
+                            <button
+                                key={c.id} type="button" onClick={() => toggleCategoryFilter(c.id)}
+                                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-transparent text-muted-foreground hover:bg-muted"
+                                    }`}
+                            >
+                                {c.name}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
 
             <div className="flex flex-col gap-3">
                 {pagedDesigns.length === 0 && (
@@ -172,20 +173,20 @@ export function DesignListSection({
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex flex-col gap-2 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
-                                    {needsStoreAssignment ? (
-                                        <span className="relative flex h-2.5 w-2.5 shrink-0">
-                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                                            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-                                            
-                                        </span>
-                                    ) : (
-                                        <>
-                                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.store?.color ?? "var(--muted-foreground)" }} /> 
-                                        
-                                        </>
-                                    )}
+                                        {needsStoreAssignment ? (
+                                            <span className="relative flex h-2.5 w-2.5 shrink-0">
+                                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.store?.color ?? "var(--muted-foreground)" }} />
+
+                                            </>
+                                        )}
                                         <span className="text-sm font-semibold truncate">{d.name}</span>
-                                        </div>
+                                    </div>
                                     <div className="flex flex-col min-w-0">
                                         <span className={`text-xs ${needsStoreAssignment ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                                             {d.store
@@ -197,7 +198,7 @@ export function DesignListSection({
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-1 shrink-0">
                                     {needsStoreAssignment && (
                                         <AssignStoreDialog design={d} stores={stores} owners={owners} onAssigned={onUpdated} />

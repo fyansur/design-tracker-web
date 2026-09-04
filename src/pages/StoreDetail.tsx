@@ -28,17 +28,10 @@ interface StoreDetailData {
 export default function StoreDetail() {
     const [stores, setStores] = useState<Store[]>([]);
     const [owners, setOwners] = useState<Owner[]>([]);
-    const [sortBy, setSortBy] = useState<"date" | "name" | "category">("date");
-    const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-    const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [statusTab, setStatusTab] = useState<"pending" | "completed">("pending");
-    const [page, setPage] = useState(1);
-    const PAGE_SIZE = 10;
     const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<StoreDetailData | null>(null);
     const [period, setPeriod] = useState<"week" | "month" | "year">("week");
-    const [searchQuery, setSearchQuery] = useState("");
     const { setBreadcrumb } = useBreadcrumb();
     const navigate = useNavigate();
 
@@ -60,12 +53,6 @@ export default function StoreDetail() {
         await api.put(`/designs/${designId}/pin`);
         fetchData();
     }
-    function formatDateTime(dateStr: string) {
-        return new Date(dateStr).toLocaleString("en-US", {
-            month: "short", day: "numeric", year: "numeric",
-            hour: "numeric", minute: "2-digit", hour12: true,
-        });
-    }
 
     useEffect(() => {
         api.get<Category[]>("/categories").then((res) => setCategories(res.data));
@@ -76,10 +63,6 @@ export default function StoreDetail() {
     useEffect(() => {
         fetchData();
     }, [id, period]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [statusTab, searchQuery, selectedCategoryIds, sortBy, sortDir]);
 
     useEffect(() => {
         if (data) {
@@ -125,39 +108,6 @@ export default function StoreDetail() {
     }
 
     if (!data) return <LoadingScreen />;
-
-    function toggleCategoryFilter(categoryId: number) {
-        setSelectedCategoryIds((prev) =>
-            prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
-        );
-    }
-
-    const filteredDesigns = data.designs
-        .filter((d) => (statusTab === "completed" ? d.isCompleted : !d.isCompleted))
-        .filter((d) => d.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        .filter((d) => selectedCategoryIds.length === 0 || (d.categoryId && selectedCategoryIds.includes(d.categoryId)))
-        .sort((a, b) => {
-            if (statusTab === "pending") {
-                if (a.isPinned && b.isPinned) {
-                    // dua-duanya pinned: yang paling BARU di-pin, di atas
-                    return new Date(b.pinnedAt!).getTime() - new Date(a.pinnedAt!).getTime();
-                }
-                const pinDiff = Number(b.isPinned) - Number(a.isPinned);
-                if (pinDiff !== 0) return pinDiff;
-            }
-            let compare = 0;
-            if (sortBy === "date") compare = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            else if (sortBy === "name") compare = a.name.localeCompare(b.name);
-            else compare = (a.category?.name ?? "").localeCompare(b.category?.name ?? "");
-            return sortDir === "asc" ? compare : -compare;
-        });
-    const storeCategories = Array.from(
-        new Map(
-            data.designs.filter((d) => d.category).map((d) => [d.category!.id, d.category!])
-        ).values()
-    );
-    const totalPages = Math.max(1, Math.ceil(filteredDesigns.length / PAGE_SIZE));
-    const pagedDesigns = filteredDesigns.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     return (
         <div className="flex h-full flex-col">

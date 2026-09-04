@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
@@ -16,8 +16,8 @@ import { toast } from "sonner";
 const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
 
 export function CreateDailyGoalDialog({
-  stores, owners, onCreated, lockedStoreId,
-}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
+  stores, owners, onCreated, lockedStoreId, trigger,
+}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number; trigger?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -62,11 +62,15 @@ export function CreateDailyGoalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button size="icon" className="h-6 w-6 rounded-sm" onClick={() => handleOpenChange(true)}>
-        <Plus className="h-4 w-4" />
-      </Button>
+      {trigger ? (
+        <div onClick={() => handleOpenChange(true)}>{trigger}</div>
+      ) : (
+        <Button size="icon" className="h-6 w-6 rounded-sm" onClick={() => handleOpenChange(true)}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
 
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
         <DialogHeader><DialogTitle>Create Daily Goal</DialogTitle></DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {serverError && <p className="text-sm text-destructive">{serverError}</p>}
@@ -80,7 +84,7 @@ export function CreateDailyGoalDialog({
                   <FieldLabel>Scope</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><Globe/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><Globe /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue>{SCOPE_LABEL[field.value]}</SelectValue>
@@ -113,7 +117,7 @@ export function CreateDailyGoalDialog({
                   <FieldLabel>Store</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><StoreIcon/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><StoreIcon /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue placeholder="Select a store">
@@ -146,7 +150,7 @@ export function CreateDailyGoalDialog({
                   <FieldLabel>Owner</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><User/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><User /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue placeholder="Select an owner">
@@ -178,7 +182,7 @@ export function CreateDailyGoalDialog({
                 <FieldLabel>Target Count</FieldLabel>
                 <FieldContent>
                   <InputGroup>
-                    <InputGroupAddon align="inline-start"><Target/></InputGroupAddon>
+                    <InputGroupAddon align="inline-start"><Target /></InputGroupAddon>
                     <InputGroupInput
                       aria-invalid={fieldState.invalid}
                       type="number"

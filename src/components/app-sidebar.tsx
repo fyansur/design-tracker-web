@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { NavMain } from "@/components/nav-main";
 const DIR_ITEMS = [
+  { title: "Trash", url: "/trash", icon: Trash2 },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 const NAV_ITEMS = [
@@ -19,7 +20,6 @@ const NAV_ITEMS = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Stores", url: "/stores", icon: Store },
   { title: "Designs", url: "/designs", icon: Palette },
-  { title: "Trash", url: "/trash", icon: Trash2 },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

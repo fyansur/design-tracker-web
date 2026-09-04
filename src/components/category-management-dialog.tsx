@@ -51,7 +51,7 @@ export function CategoryManagementDialog({
                 <Pencil className="size-4" /> Manage Categories
             </Button>
 
-            <DialogContent>
+            <DialogContent showCloseButton={false}>
                 <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
 
                 <form onSubmit={(e) => {

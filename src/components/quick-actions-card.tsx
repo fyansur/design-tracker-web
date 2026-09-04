@@ -6,15 +6,17 @@ import { CreateOwnerDialog } from "@/components/create-owner-dialog";
 import { Palette, Store as StoreIcon, UserPlus, Link2, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import type { Owner, Store } from "@/types";
+import { CreateDailyGoalDialog } from "@/components/create-daily-goal-dialog";
+import { CreateGoalDialog } from "@/components/create-goal-dialog";
+import { Clock, Target } from "lucide-react";
 
-function ActionTile({ icon: Icon, label, children }: { icon: any; label: string; children?: React.ReactNode }) {
+function ActionTile({ icon: Icon, label }: { icon: any; label: string }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border p-4 cursor-pointer hover:bg-muted transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
-                <Icon className="h-5 w-5" />
+        <div className="flex items-center gap-3 rounded-lg border px-3 py-2.5 cursor-pointer hover:bg-muted transition-colors">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-chart-2/10 text-chart-2">
+                <Icon className="h-4 w-4" />
             </div>
-            <span className="text-sm font-medium text-center">{label}</span>
-            {children}
+            <span className="text-sm font-medium">{label}</span>
         </div>
     );
 }
@@ -43,13 +45,27 @@ export function QuickActionsCard({ stores, owners, onCreated }: { stores: Store[
                         stores={stores}
                         owners={owners}
                         onCreated={onCreated}
-                        trigger={<ActionTile icon={StoreIcon} label="Add Store" />}
+                        trigger={<ActionTile icon={StoreIcon} label="Add New Store" />}
                     />
 
                     <CreateOwnerDialog
                         owners={owners}
                         onCreated={onCreated}
-                        trigger={<ActionTile icon={UserPlus} label="Add Owner" />}
+                        trigger={<ActionTile icon={UserPlus} label="Add New Owner" />}
+                    />
+
+                    <CreateDailyGoalDialog
+                        stores={stores}
+                        owners={owners}
+                        onCreated={onCreated}
+                        trigger={<ActionTile icon={Clock} label="Add Daily Goal" />}
+                    />
+
+                    <CreateGoalDialog
+                        stores={stores}
+                        owners={owners}
+                        onCreated={onCreated}
+                        trigger={<ActionTile icon={Target} label="Add Campaign" />}
                     />
 
                     <div onClick={handleCopyMonitorLink}>

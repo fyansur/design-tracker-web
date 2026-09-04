@@ -97,7 +97,7 @@ export function EditDesignDialog({
         <Pencil className="h-4 w-4" />
       </Button>
 
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
         <DialogHeader><DialogTitle>Edit Design</DialogTitle></DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {serverError && <p className="text-sm text-destructive">{serverError}</p>}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
@@ -19,8 +19,8 @@ const DURATION_LABEL: Record<string, string> = {
 };
 
 export function CreateGoalDialog({
-  stores, owners, onCreated, lockedStoreId,
-}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number }) {
+  stores, owners, onCreated, lockedStoreId, trigger,
+}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number; trigger?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -72,10 +72,14 @@ export function CreateGoalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button size="icon" className="h-6 w-6 rounded-sm" onClick={() => handleOpenChange(true)}>
-        <Plus className="h-4 w-4" />
-      </Button>
-      <DialogContent>
+      {trigger ? (
+        <div onClick={() => handleOpenChange(true)}>{trigger}</div>
+      ) : (
+        <Button size="icon" className="h-6 w-6 rounded-sm" onClick={() => handleOpenChange(true)}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
+      <DialogContent showCloseButton={false}>
         <DialogHeader><DialogTitle>Create Campaign</DialogTitle></DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {serverError && <p className="text-sm text-destructive">{serverError}</p>}
@@ -89,7 +93,7 @@ export function CreateGoalDialog({
                   <FieldLabel>Scope</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><Globe/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><Globe /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue>{SCOPE_LABEL[field.value]}</SelectValue>
@@ -122,7 +126,7 @@ export function CreateGoalDialog({
                   <FieldLabel>Campaign Name</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><Tag/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><Tag /></InputGroupAddon>
                       <InputGroupInput aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={field.onChange} placeholder="Enter campaign name" />
                     </InputGroup>
                     {fieldState.invalid && (
@@ -146,7 +150,7 @@ export function CreateGoalDialog({
                   <FieldLabel>Store</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><StoreIcon/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><StoreIcon /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue placeholder="Select a store">
@@ -179,7 +183,7 @@ export function CreateGoalDialog({
                   <FieldLabel>Owner</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><User/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><User /></InputGroupAddon>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger aria-invalid={fieldState.invalid} className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                           <SelectValue placeholder="Select an owner">
@@ -211,7 +215,7 @@ export function CreateGoalDialog({
                 <FieldLabel>Target Count</FieldLabel>
                 <FieldContent>
                   <InputGroup>
-                    <InputGroupAddon align="inline-start"><Target/></InputGroupAddon>
+                    <InputGroupAddon align="inline-start"><Target /></InputGroupAddon>
                     <InputGroupInput
                       aria-invalid={fieldState.invalid}
                       type="number"
@@ -239,7 +243,7 @@ export function CreateGoalDialog({
                 <FieldLabel>Duration</FieldLabel>
                 <FieldContent>
                   <InputGroup>
-                    <InputGroupAddon align="inline-start"><CalendarClock/></InputGroupAddon>
+                    <InputGroupAddon align="inline-start"><CalendarClock /></InputGroupAddon>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent! shadow-none focus-visible:ring-0">
                         <SelectValue>{DURATION_LABEL[field.value]}</SelectValue>
@@ -273,7 +277,7 @@ export function CreateGoalDialog({
                   <FieldLabel>Number of Days</FieldLabel>
                   <FieldContent>
                     <InputGroup>
-                      <InputGroupAddon align="inline-start"><CalendarClock/></InputGroupAddon>
+                      <InputGroupAddon align="inline-start"><CalendarClock /></InputGroupAddon>
                       <InputGroupInput
                         aria-invalid={fieldState.invalid}
                         type="number"

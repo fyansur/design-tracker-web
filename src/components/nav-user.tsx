@@ -12,7 +12,13 @@ export function NavUser() {
   const navigate = useNavigate();
 
   if (!user) return null;
-  const initials = user.name.slice(0, 2).toUpperCase();
+  const initials = user.name
+    .trim()
+    .split(/\s+/)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 
   return (

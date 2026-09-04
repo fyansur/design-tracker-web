@@ -21,6 +21,7 @@ import {
 } from "@/lib/validation";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DesignListSection } from "@/components/design-list-section";
+import { LoadingScreen } from "@/components/loading-screen";
 
 
 export default function Designs() {
@@ -115,6 +116,7 @@ export default function Designs() {
         loadAll();
     }
 
+    if (!designs) return <LoadingScreen />;
     return (
         <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">

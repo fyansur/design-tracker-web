@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { PieChart as PieChartIcon } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
@@ -20,8 +22,10 @@ export function DesignsDistributionCard({
 
     return (
         <Card className="h-fit">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0">
+                <div className="flex flex-col gap-1.5">
                 <CardTitle>Distribution</CardTitle>
+                </div>
                 <Tabs value={distributionTab} onValueChange={(v) => v && setDistributionTab(v as typeof distributionTab)}>
                     <TabsList>
                         <TabsTrigger value="store">Store</TabsTrigger>
@@ -31,7 +35,13 @@ export function DesignsDistributionCard({
             </CardHeader>
             <CardContent>
                 {items.length === 0 || completedCount === 0 ? (
-                    <p className="text-sm text-muted-foreground">No data available.</p>
+                    <Empty className="py-6 border border-dashed">
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon"><PieChartIcon /></EmptyMedia>
+                            <EmptyTitle className="text-sm">No data yet</EmptyTitle>
+                            <EmptyDescription className="text-sm">Complete a design to see its distribution here.</EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
                 ) : (
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative h-40 w-40 shrink-0">

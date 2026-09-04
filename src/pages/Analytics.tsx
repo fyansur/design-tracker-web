@@ -4,7 +4,9 @@ import type { AnalyticsData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Palette, CircleCheck, Tag, User, Store } from "lucide-react";
+import { Palette, CircleCheck, Tag, User, Store, Pencil, UserStar } from "lucide-react";
+import { LoadingScreen } from "@/components/loading-screen";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
 function ChangeBadge({ pct }: { pct: number | null }) {
   if (pct === null) return <span className="text-xs text-muted-foreground">New</span>;
@@ -39,7 +41,7 @@ export default function Analytics() {
     fetchData();
   }, [period]);
 
-  if (!data) return <p className="p-6 text-sm text-muted-foreground">Loading...</p>;
+  if (!data) return <LoadingScreen />;
 
   return (
     <div className="flex h-full flex-col">
@@ -123,7 +125,15 @@ export default function Analytics() {
                 <CardDescription>Most popular categories based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topCategories.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
+                {data.topCategories.length === 0 &&
+                  <Empty className="py-6 border border-dashed">
+                    <EmptyHeader>
+                      <EmptyMedia className="text-sm" variant="icon"><Pencil /></EmptyMedia>
+                      <EmptyTitle className="text-sm">No data yet</EmptyTitle>
+                      <EmptyDescription className="text-sm">Complete some designs to see top categories.</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                }
                 {data.topCategories.map((c, i) => {
                   const maxCount = data.topCategories[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
@@ -158,7 +168,14 @@ export default function Analytics() {
                 <CardDescription>Most popular stores based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topStores.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
+                {data.topStores.length === 0 &&
+                  <Empty className="py-6 border border-dashed">
+                    <EmptyHeader>
+                      <EmptyMedia className="text-sm" variant="icon"><Store /></EmptyMedia>
+                      <EmptyTitle className="text-sm">No data yet</EmptyTitle>
+                      <EmptyDescription className="text-sm">Complete some designs to see top categories.</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>}
                 {data.topStores.map((s, i) => {
                   const maxCount = data.topStores[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (s.count / maxCount) * 100 : 0;
@@ -193,7 +210,15 @@ export default function Analytics() {
                 <CardDescription>Most popular owners based on completed designs.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                {data.topOwners.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
+                {data.topOwners.length === 0 &&
+                  <Empty className="py-6 border border-dashed">
+                    <EmptyHeader>
+                      <EmptyMedia className="text-sm" variant="icon"><UserStar /></EmptyMedia>
+                      <EmptyTitle className="text-sm">No data yet</EmptyTitle>
+                      <EmptyDescription className="text-sm">Complete some designs to see top owners.</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                }
                 {data.topOwners.map((o, i) => {
                   const maxCount = data.topOwners[0]?.count ?? 0;
                   const pct = maxCount > 0 ? (o.count / maxCount) * 100 : 0;

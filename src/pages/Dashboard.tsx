@@ -12,6 +12,7 @@ import { RecentActivityFeed } from "@/components/recent-activity-feed";
 import { DesignsDistributionCard } from "@/components/designs-distribution-card";
 import { QuickActionsCard } from "@/components/quick-actions-card";
 import type { Owner } from "@/types";
+import { LoadingScreen } from "@/components/loading-screen";
 
 const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 const STATUS_COLOR = {
@@ -77,7 +78,7 @@ export default function Dashboard() {
     api.get<Store[]>("/stores").then((res) => setStores(res.data));
   }, []);
 
-  if (!data) return <p>Loading...</p>;
+  if (!data) return <LoadingScreen />;
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto p-4 md:p-8 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
@@ -125,7 +126,6 @@ export default function Dashboard() {
               <Card className="h-fit">
                 <CardHeader>
                   <CardTitle>Overview</CardTitle>
-                  <CardDescription>Completed designs throughout the year.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={280}>
@@ -155,7 +155,6 @@ export default function Dashboard() {
                 <Card className="h-fit">
                   <CardHeader>
                     <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Latest activities in your account.</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <RecentActivityFeed activities={data.recentActivities} />

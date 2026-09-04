@@ -166,3 +166,34 @@ export function buildEditStoreSchema(existingStoreNames: string[], excludeName?:
   });
 }
 export type EditStoreForm = z.infer<ReturnType<typeof buildEditStoreSchema>>;
+
+export const profileFormSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Max 100 characters"),
+});
+export type ProfileForm = z.infer<typeof profileFormSchema>;
+
+export const changePasswordFormSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Must be at least 8 characters"),
+});
+export type ChangePasswordForm = z.infer<typeof changePasswordFormSchema>;
+
+export const loginFormSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+});
+export type LoginForm = z.infer<typeof loginFormSchema>;
+
+export const registerFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required").max(100, "Max 100 characters"),
+    email: z.string().min(1, "Email is required").email("Enter a valid email"),
+    password: z.string().min(8, "Must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Passwords do not match" });
+    }
+  });
+export type RegisterForm = z.infer<typeof registerFormSchema>;

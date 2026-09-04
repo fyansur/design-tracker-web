@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { CircleCheck, Trash2, Pin, Globe, Store, User, Calendar } from "lucide-react";
 import { CircularProgress } from "@/lib/dashboard-shared";
 import { SimpleCarousel } from "@/components/simple-carousel";
@@ -21,12 +21,15 @@ export function CampaignsList({
 }) {
   if (goals.length === 0) {
     return (
-      <Empty className="py-6">
-        <EmptyHeader>
-          <EmptyMedia variant="icon"><Pin /></EmptyMedia>
-          <EmptyTitle className="text-sm">No active campaigns yet</EmptyTitle>
-        </EmptyHeader>
-      </Empty>
+      <div className="flex flex-col bg-card p-6 px-6 rounded-xl h-50">
+        <Empty className="py-6 border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia className="text-sm" variant="icon"><Pin /></EmptyMedia>
+            <EmptyTitle className="text-sm">No active campaigns yet</EmptyTitle>
+            <EmptyDescription className="text-sm">Create a campaign to get started.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     );
   }
 

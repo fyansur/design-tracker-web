@@ -1,5 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Clock, Pencil } from "lucide-react";
 import { EVENT_ICON, EVENT_COLOR, EVENT_DOT_COLOR, getActivityTitle, getActivityDescription, timeAgo } from "@/lib/dashboard-shared";
 import type { Activity } from "@/types";
@@ -14,11 +14,25 @@ export function RecentActivityFeed({
   compact?: boolean;
 }) {
   if (activities.length === 0) {
+    if (compact) {
+      return (
+        <div className="flex flex-col bg-card p-6 px-6 rounded-xl h-50">
+          <Empty className="py-6 border border-dashed">
+            <EmptyHeader>
+              <EmptyMedia className="text-sm" variant="icon"><Clock /></EmptyMedia>
+              <EmptyTitle className="text-sm">No recent activity</EmptyTitle>
+              <EmptyDescription className="text-sm">No recent activity to display.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      );
+    }
     return (
-      <Empty className="py-6">
+      <Empty className="py-6 border border-dashed">
         <EmptyHeader>
-          <EmptyMedia variant="icon"><Clock /></EmptyMedia>
+          <EmptyMedia className="text-sm" variant="icon"><Clock /></EmptyMedia>
           <EmptyTitle className="text-sm">No recent activity</EmptyTitle>
+          <EmptyDescription className="text-sm">You have no recent activity to display.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -27,7 +41,7 @@ export function RecentActivityFeed({
   if (compact) {
     return (
       <ScrollArea className={height}>
-      <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
+        <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
           {activities.map((a) => (
             <div key={a.id} className="flex items-start gap-2 py-1.5 border-b last:border-0">
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${EVENT_DOT_COLOR[a.event] ?? "bg-muted-foreground"}`} />

@@ -151,7 +151,7 @@ export function DesignListSection({
 
             <div className="flex flex-col gap-3">
                 {pagedDesigns.length === 0 && (
-                    <Empty>
+                    <Empty className="border border-dashed">
                         <EmptyHeader>
                             <EmptyMedia variant="icon"><Search /></EmptyMedia>
                             <EmptyTitle>{searchQuery || selectedCategoryIds.length > 0 ? "No results found" : `No designs ${statusTab} yet`}</EmptyTitle>

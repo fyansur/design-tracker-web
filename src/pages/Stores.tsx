@@ -23,7 +23,8 @@ import type { DashboardData } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Store as StoreIcon, UserStar } from "lucide-react";
 import { DesignsDistributionCard } from "@/components/designs-distribution-card";
-
+import { LoadingScreen } from "@/components/loading-screen";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 export default function Stores() {
   const [stores, setStores] = useState<Store[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -97,6 +98,7 @@ export default function Stores() {
   useEffect(() => {
     api.get<DashboardData>("/dashboard?period=week").then((res) => setDashboardData(res.data));
   }, []);
+  if (!dashboardData) return <LoadingScreen />;
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8 lg:flex-row">
       {/* Stores: bagian utama */}
@@ -193,56 +195,63 @@ export default function Stores() {
               );
             })}
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-t">
-                <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("name")}>
-                  <span className="flex items-center gap-1">Store <SortIcon column="name" /></span>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("owner")}>
-                  <span className="flex items-center gap-1">Owner <SortIcon column="owner" /></span>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("designs")}>
-                  <span className="flex items-center gap-1">Designs <SortIcon column="designs" /></span>
-                </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pagedStores.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
-                    {searchQuery || selectedOwnerIds.length > 0 ? "No results." : "No stores yet."}
-                  </TableCell>
+          {pagedStores.length === 0 ? (
+            <Empty className="py-6 border border-dashed rounded-lg">
+              <EmptyHeader>
+                <EmptyMedia className="text-sm" variant="icon">{searchQuery || selectedOwnerIds.length > 0 ? <Search /> : <StoreIcon />}</EmptyMedia>
+                <EmptyTitle className="text-sm">{searchQuery || selectedOwnerIds.length > 0 ? "No results found" : "No stores yet"}</EmptyTitle>
+                <EmptyDescription className="text-sm">
+                  {searchQuery || selectedOwnerIds.length > 0
+                    ? "Try a different search keyword or filter."
+                    : "Add your first store to get started."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-t">
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("name")}>
+                    <span className="flex items-center gap-1">Store <SortIcon column="name" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("owner")}>
+                    <span className="flex items-center gap-1">Owner <SortIcon column="owner" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("designs")}>
+                    <span className="flex items-center gap-1">Designs <SortIcon column="designs" /></span>
+                  </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              )}
-              {pagedStores.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>
-                    <Link to={`/stores/${s.id}`} className="flex items-center gap-2 hover:underline font-medium">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-                      {s.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{s.owner?.name}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{s.completedCount ?? 0}/{s.designCount ?? 0} designs</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="outline" size="sm" className="h-7 gap-1" onClick={() => window.open(s.url, "_blank")}>
-                        <ExternalLink className="h-3 w-3" /> Etsy
-                      </Button>
-                      <EditStoreDialog store={s} stores={stores} owners={owners} onUpdated={loadAll} />
-                      <DeleteStoreButton storeName={s.name} onConfirm={() => handleDeleteStore(s.id)} />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {pagedStores.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell>
+                      <Link to={`/stores/${s.id}`} className="flex items-center gap-2 hover:underline font-medium">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+                        {s.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{s.owner?.name}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{s.completedCount ?? 0}/{s.designCount ?? 0} designs</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="outline" size="sm" className="h-7 gap-1" onClick={() => window.open(s.url, "_blank")}>
+                          <ExternalLink className="h-3 w-3" /> Etsy
+                        </Button>
+                        <EditStoreDialog store={s} stores={stores} owners={owners} onUpdated={loadAll} />
+                        <DeleteStoreButton storeName={s.name} onConfirm={() => handleDeleteStore(s.id)} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
 
           <div className="flex items-center justify-between rounded-lg border px-4 py-3 text-sm text-muted-foreground">
             <span>

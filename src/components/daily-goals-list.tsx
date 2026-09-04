@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { CircleCheck, Trash2, Globe, Store, User, Clock } from "lucide-react";
 import type { DailyGoalStat } from "@/types";
 import { DailyGoalRow } from "./daily-goals-row";
@@ -30,12 +30,15 @@ export function DailyGoalsList({
 
     if (dailyGoalStats.length === 0) {
         return (
-            <Empty className="py-6">
-                <EmptyHeader>
-                    <EmptyMedia variant="icon"><Clock /></EmptyMedia>
-                    <EmptyTitle className="text-sm">No daily goals yet</EmptyTitle>
-                </EmptyHeader>
-            </Empty>
+            <div className="flex flex-col bg-card p-6 px-6 rounded-xl h-50">
+                <Empty className="py-6 border border-dashed">
+                    <EmptyHeader>
+                        <EmptyMedia className="text-sm" variant="icon"><Clock /></EmptyMedia>
+                        <EmptyTitle className="text-sm">No daily goals yet</EmptyTitle>
+                        <EmptyDescription className="text-sm">Create a daily goal to get started.</EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
+            </div>
         );
     }
 

@@ -2,7 +2,7 @@ import type * as React from "react";
 import { LayoutDashboard, Store, Palette, Trash2, Settings } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { BarChart3 } from "lucide-react";
-
+import AppLogo from "@/assets/logo.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -32,8 +32,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu className="group-data-[collapsible=icon]:items-center">
           <SidebarMenuItem className="p-4 flex justify-between">
             <div className="items-center justify-center flex group-data-[collapsible=icon]:hidden hover:text-muted-foreground">
-              <div className="grid flex-1 text-left text-sm">
-                <span className="truncate font-medium">Design Tracker</span>
+              <div className="items-center flex flex-1 text-left text-sm">
+                <img src={AppLogo} alt="MerchFlow" className="h-6 w-6 mr-2" />
+                <span className="truncate font-medium">MerchFlow</span>
               </div>
             </div>
               <SidebarTrigger className="duration-200 transition-all"/>

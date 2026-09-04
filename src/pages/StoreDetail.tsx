@@ -23,6 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
 import { DesignListSection } from "@/components/design-list-section";
+import { LoadingScreen } from "@/components/loading-screen";
+
 interface StoreDetailData {
     store: Store;
     period: string;
@@ -131,7 +133,7 @@ export default function StoreDetail() {
         );
     }
 
-    if (!data) return <p className="p-6 text-sm text-muted-foreground">Loading...</p>;
+    if (!data) return <LoadingScreen />;
 
     function toggleCategoryFilter(categoryId: number) {
         setSelectedCategoryIds((prev) =>

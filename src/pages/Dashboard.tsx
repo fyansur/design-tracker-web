@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 import type { DashboardData, Store } from "../types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, ResponsiveContainer } from "recharts";
 import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TodayStatsCards } from "@/components/today-stats-cards";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
@@ -14,7 +13,6 @@ import { QuickActionsCard } from "@/components/quick-actions-card";
 import type { Owner } from "@/types";
 import { LoadingScreen } from "@/components/loading-screen";
 
-const OWNER_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 const STATUS_COLOR = {
   achieved: "bg-blue-500",
   missed: "bg-muted-foreground/40",

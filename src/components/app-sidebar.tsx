@@ -1,15 +1,12 @@
 import type * as React from "react";
 import { LayoutDashboard, Store, Palette, Trash2, Settings } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { BarChart3 } from "lucide-react";
 import AppLogo from "@/assets/logo.svg";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";

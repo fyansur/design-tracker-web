@@ -1,8 +1,5 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { CircleCheck, Trash2, Globe, Store, User, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import type { DailyGoalStat } from "@/types";
 import { DailyGoalRow } from "./daily-goals-row";
 import { DailyGoalCard } from "./daily-goals-card";
@@ -18,15 +15,6 @@ export function DailyGoalsList({
     onDelete: (dailyGoalId: number) => void;
     compact?: boolean;
 }) {
-    const [targetDrafts, setTargetDrafts] = useState<Record<number, string>>({});
-
-    function handleBlur(dailyGoalId: number, currentTarget: number | null) {
-        const draft = targetDrafts[dailyGoalId];
-        const value = Number(draft);
-        if (!draft || !value || value === currentTarget) return;
-        onUpdateTarget(dailyGoalId, value);
-
-    }
 
     if (dailyGoalStats.length === 0) {
         return (

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -158,7 +157,6 @@ export default function Monitor() {
   }
 
   const pageSize = data.perPage;
-  const maxStoreCount = data.storeBreakdown[0]?.count ?? 1;
   const weeks: (typeof data.calendarData)[] = [];
   for (let i = 0; i < data.calendarData.length; i += 7) {
     weeks.push(data.calendarData.slice(i, i + 7));

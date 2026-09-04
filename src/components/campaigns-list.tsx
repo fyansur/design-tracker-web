@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { CircleCheck, Trash2, Pin, Globe, Store, User, Calendar } from "lucide-react";
+import { CircleCheck, Trash2, Pin, Globe, Store, User } from "lucide-react";
 import { CircularProgress } from "@/lib/dashboard-shared";
 import { SimpleCarousel } from "@/components/simple-carousel";
 import type { Goal } from "@/types";

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldError } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
 import {
-    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,7 +20,7 @@ const assignStoreSchema = z.object({
 type AssignStoreForm = z.infer<typeof assignStoreSchema>;
 
 export function AssignStoreDialog({
-    design, stores, owners, onAssigned,
+    design, stores, onAssigned,
 }: { design: Design; stores: Store[]; owners: Owner[]; onAssigned: () => void }) {
     const [open, setOpen] = useState(false);
     const [serverError, setServerError] = useState("");

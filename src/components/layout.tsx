@@ -6,10 +6,8 @@ import { ModeToggle } from "./mode-toggle";
 import { Separator } from "@/components/ui/separator";
 import { ProgressAside } from "./progress-aside";
 import { NavUser } from "@/components/nav-user";
-import { GlobeCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Breadcrumb,
   BreadcrumbItem,

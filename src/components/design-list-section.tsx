@@ -26,7 +26,6 @@ function formatDateTime(dateStr: string) {
 }
 
 export function DesignListSection({
-    title,
     designs,
     categories,
     stores,

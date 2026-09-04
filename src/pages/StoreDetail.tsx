@@ -5,20 +5,11 @@ import api from "@/lib/api";
 import type { Store, Design, Goal, DailyGoalStat, Category, Owner } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Globe, Store as StoreIcon, User, Pin, Calendar, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useBreadcrumb } from "@/context/BreadcrumbContext";
-import { ExternalLink, Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { EditDesignDialog } from "@/components/edit-design-dialog";
 import { CreateDailyGoalDialog } from "@/components/create-daily-goal-dialog";
 import { CreateGoalDialog } from "@/components/create-goal-dialog";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
-    DropdownMenuRadioGroup, DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { Search, PackageOpen, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";

@@ -3,8 +3,8 @@ import api from "@/lib/api";
 import type { AnalyticsData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Palette, CircleCheck, Tag, User, Store, Pencil, UserStar } from "lucide-react";
+import { AreaChart, Area, XAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Palette, CircleCheck, Store, Pencil, UserStar } from "lucide-react";
 import { LoadingScreen } from "@/components/loading-screen";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 

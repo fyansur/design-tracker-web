@@ -3,6 +3,7 @@ import { buildUniqueNameSchema, type CategoryNameForm, type UniqueNameForm } fro
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldError } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -20,7 +21,7 @@ export function CategoryRow({
         mode: "onChange",
         defaultValues: { name: category.name },
     });
-    
+
     const [isEditing, setIsEditing] = useState(false);
     const [deleteError, setDeleteError] = useState("");
 
@@ -35,6 +36,7 @@ export function CategoryRow({
 
     async function handleRename(values: CategoryNameForm) {
         await api.put(`/categories/${category.id}`, values);
+        toast.success(`"${values.name}" renamed.`);
         setIsEditing(false);
         onRenamed();
     }
@@ -42,6 +44,15 @@ export function CategoryRow({
     async function handleDelete() {
         try {
             await api.delete(`/categories/${category.id}`);
+            toast.success(`"${category.name}" deleted.`, {
+                action: {
+                    label: "Undo",
+                    onClick: async () => {
+                        await api.post(`/trash/category/${category.id}/restore`, {}, { suppressGlobalError: true });
+                        onRenamed();
+                    },
+                }
+            });
             setDeleteError("");
             onDeleted();
         } catch {

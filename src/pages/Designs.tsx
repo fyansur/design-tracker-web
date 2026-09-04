@@ -22,6 +22,7 @@ import {
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DesignListSection } from "@/components/design-list-section";
 import { LoadingScreen } from "@/components/loading-screen";
+import { toast } from "sonner";
 
 
 export default function Designs() {
@@ -93,6 +94,7 @@ export default function Designs() {
             referenceUrl: values.referenceUrl || undefined,
         });
 
+        toast.success(`"${values.name}" added.`);
         form.reset({ name: "", storeId: "", categoryId: "", categoryName: "", referenceUrl: "" });
         loadAll();
     }
@@ -103,6 +105,7 @@ export default function Designs() {
             return;
         }
         await api.put(`/designs/${design.id}`, { isCompleted: !design.isCompleted });
+        toast.success(design.isCompleted ? "Moved back to pending." : "Marked as complete.");
         loadAll();
     }
 
@@ -113,6 +116,15 @@ export default function Designs() {
 
     async function handleDeleteDesign(designId: number) {
         await api.delete(`/designs/${designId}`);
+        toast.success("Design deleted.", {
+            action: {
+                label: "Undo",
+                onClick: async () => {
+                    await api.post(`/trash/design/${designId}/restore`, {}, { suppressGlobalError: true });
+                    loadAll();
+                },
+            },
+        });
         loadAll();
     }
 

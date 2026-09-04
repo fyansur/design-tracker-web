@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -40,6 +41,7 @@ export function CompleteWithOwnerDialog({
     setServerError("");
     try {
       await api.put(`/designs/${design.id}`, { isCompleted: true, ownerId: Number(values.ownerId) });
+      toast.success("Design completed.");
       handleOpenChange(false);
       onCompleted();
     } catch {

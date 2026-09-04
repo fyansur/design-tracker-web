@@ -12,6 +12,8 @@ import { DesignsDistributionCard } from "@/components/designs-distribution-card"
 import { QuickActionsCard } from "@/components/quick-actions-card";
 import type { Owner } from "@/types";
 import { LoadingScreen } from "@/components/loading-screen";
+import { Tooltip as RadixTooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const STATUS_COLOR = {
   achieved: "bg-blue-500",
@@ -60,6 +62,15 @@ export default function Dashboard() {
   }
   async function handleDeleteDailyGoal(dailyGoalId: number) {
     await api.delete(`/daily-goals/${dailyGoalId}`);
+    toast.success("Daily goal deleted.", {
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          await api.post(`/trash/daily-goal/${dailyGoalId}/restore`, {}, { suppressGlobalError: true });
+          fetchData();
+        },
+      },
+    });
     fetchData();
   }
   async function handleTogglePinGoal(goalId: number) {
@@ -68,6 +79,15 @@ export default function Dashboard() {
   }
   async function handleDeleteGoal(goalId: number) {
     await api.delete(`/goals/${goalId}`);
+    toast.success("Campaign deleted.", {
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          await api.post(`/trash/goal/${goalId}/restore`, {}, { suppressGlobalError: true });
+          fetchData();
+        },
+      },
+    });
     fetchData();
   }
 
@@ -95,15 +115,21 @@ export default function Dashboard() {
                       </span>
                       <span className={`text-2xl font-semibold ${b.isToday ? "text-foreground" : "text-muted-foreground"}`}>{b.count}</span>
                       {b.dailyGoalStatuses.length > 0 && (
-                        <div className="absolute bottom-2 right-2 flex gap-1">
-                          {b.dailyGoalStatuses.map((s) => (
-                            <span
-                              key={s.dailyGoalId}
-                              title={`${s.displayName}: ${STATUS_LABEL[s.status]}`}
-                              className={`h-2 w-2 rounded-full ${STATUS_COLOR[s.status]}`}
-                            />
-                          ))}
-                        </div>
+                        <TooltipProvider delay={100}>
+                          <div className="absolute bottom-2 right-2 flex gap-1">
+                            {b.dailyGoalStatuses.map((s) => (
+                              <RadixTooltip key={s.dailyGoalId}>
+                                <TooltipTrigger
+                                  render={<span className={`h-2 w-2 rounded-full ${STATUS_COLOR[s.status]}`} />}
+                                />
+                                <TooltipContent className="p-2">
+                                  <span className="font-medium">{s.displayName}</span>
+                                  <span className="text-muted-foreground"> — {STATUS_LABEL[s.status]}</span>
+                                </TooltipContent>
+                              </RadixTooltip>
+                            ))}
+                          </div>
+                        </TooltipProvider>
                       )}
                     </div>
                   </div>

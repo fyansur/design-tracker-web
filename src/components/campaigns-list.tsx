@@ -37,7 +37,7 @@ export function CampaignsList({
 
   if (compact) {
     return (
-      <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
+      <div className="flex flex-col dark:bg-card bg-background ring-1 ring-foreground/10 p-3 px-6 rounded-xl">
         {sorted.map((g) => {
           const percent = g.targetCount > 0 ? Math.round((g.completedCount / g.targetCount) * 100) : 0;
           const ScopeIcon = g.scope === "STORE" ? Store : g.scope === "OWNER" ? User : Globe;
@@ -49,7 +49,7 @@ export function CampaignsList({
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <span className={percent >= 100 ? "font-medium text-chart-2" : "text-muted-foreground"}>
-                  {g.completedCount}/{g.targetCount}
+                  {g.completedCount} / {g.targetCount}
                 </span>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onTogglePin(g.id)}>
                   <Pin className={`h-3 w-3 ${g.isPinned ? "fill-current text-chart-2" : "text-muted-foreground"}`} />

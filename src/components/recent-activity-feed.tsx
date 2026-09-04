@@ -16,7 +16,7 @@ export function RecentActivityFeed({
   if (activities.length === 0) {
     if (compact) {
       return (
-        <div className="flex flex-col bg-card p-6 px-6 rounded-xl h-50">
+        <div className="flex flex-col p-6 px-6 dark:bg-card bg-background ring-1 ring-foreground/10 rounded-xl h-50">
           <Empty className="py-6 border border-dashed">
             <EmptyHeader>
               <EmptyMedia className="text-sm" variant="icon"><Clock /></EmptyMedia>
@@ -40,8 +40,7 @@ export function RecentActivityFeed({
 
   if (compact) {
     return (
-      <ScrollArea className={height}>
-        <div className="flex flex-col bg-card p-3 px-6 rounded-xl">
+      <ScrollArea className={`${height} flex flex-col bg-background ring-1 ring-foreground/10 p-3 px-6 rounded-xl overflow-hidden dark:bg-card`}>
           {activities.map((a) => (
             <div key={a.id} className="flex items-start gap-2 py-1.5 border-b last:border-0">
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${EVENT_DOT_COLOR[a.event] ?? "bg-muted-foreground"}`} />
@@ -52,7 +51,6 @@ export function RecentActivityFeed({
               </div>
             </div>
           ))}
-        </div>
       </ScrollArea>
     );
   }

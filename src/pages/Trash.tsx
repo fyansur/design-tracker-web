@@ -9,6 +9,7 @@ import {
   User, Store as StoreIcon, Tag, Palette, Target, Clock,
 } from "lucide-react";
 import { LoadingScreen } from "@/components/loading-screen";
+import { toast } from "sonner";
 
 type TrashType = "owner" | "store" | "category" | "design" | "goal" | "daily-goal";
 
@@ -63,13 +64,20 @@ export default function Trash() {
     setPage(1);
   }, [type, searchQuery]);
 
+
   async function handleRestore(id: number) {
-    await api.post(`/trash/${type}/${id}/restore`);
-    load();
+    try {
+      await api.post(`/trash/${type}/${id}/restore`, {}, { suppressGlobalError: true });
+      toast.success("Restored successfully.");
+      load();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message ?? "Failed to restore.");
+    }
   }
 
   async function handleHardDelete(id: number) {
     await api.delete(`/trash/${type}/${id}`);
+    toast.success("Permanently deleted.");
     load();
   }
 

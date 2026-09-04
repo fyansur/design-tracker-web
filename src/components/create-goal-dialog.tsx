@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Globe, Store as StoreIcon, User, Target, Tag, CalendarClock, CircleAlert } from "lucide-react";
 import type { Store, Owner } from "@/types";
 import { goalFormSchema, type GoalFormInput, type GoalFormValues } from "@/lib/validation";
+import { toast } from "sonner";
 
 const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
 const DURATION_LABEL: Record<string, string> = {
@@ -61,6 +62,7 @@ export function CreateGoalDialog({
         durationType: values.durationType,
         durationAmount: values.durationType === "custom" ? values.durationAmount : undefined,
       });
+      toast.success("Campaign created.");
       setOpen(false);
       onCreated();
     } catch (err: any) {

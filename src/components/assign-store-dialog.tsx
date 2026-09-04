@@ -13,6 +13,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Store as StoreIcon, CircleAlert } from "lucide-react";
+import { toast } from "sonner";
 
 const assignStoreSchema = z.object({
     storeId: z.string().min(1, "Please select a store"),
@@ -45,6 +46,7 @@ export function AssignStoreDialog({
         setServerError("");
         try {
             await api.put(`/designs/${design.id}`, { storeId: Number(values.storeId) });
+            toast.success("Store assigned.");
             handleOpenChange(false);
             onAssigned();
         } catch {

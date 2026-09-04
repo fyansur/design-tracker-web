@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ColorPicker, ColorSwatchPicker, ColorSwatchPickerItem, ColorSwatch } from "@/components/ui/color";
 import { Store as StoreIcon, User, CircleAlert, Check, Pencil } from "lucide-react";
 import { buildEditStoreSchema, type EditStoreForm } from "@/lib/validation";
-
+import { toast } from "sonner";
 
 const PRESET_COLORS = ["#f54900", "#3b82f6", "#22c55e", "#eab308", "#ec4899", "#8b5cf6", "#06b6d4", "#ef4444"];
 
@@ -51,6 +51,7 @@ export function EditStoreDialog({
                 ownerId: Number(values.ownerId),
                 color: values.color,
             });
+            toast.success("Store updated.");
             setOpen(false);
             onUpdated();
         } catch {

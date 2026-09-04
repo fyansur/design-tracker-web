@@ -43,7 +43,7 @@ export function DailyGoalRow({
                 <span className={isAchievedToday ? "font-medium text-chart-2" : "text-muted-foreground"}>
                     {stat.achievedToday}
                 </span>
-                <span className="text-muted-foreground">/</span>
+                <span className="text-muted-foreground"> / </span>
 
                 <Controller
                     name="targetCount"

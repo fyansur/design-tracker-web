@@ -25,6 +25,7 @@ import { Store as StoreIcon, UserStar } from "lucide-react";
 import { DesignsDistributionCard } from "@/components/designs-distribution-card";
 import { LoadingScreen } from "@/components/loading-screen";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { toast } from "sonner";
 export default function Stores() {
   const [stores, setStores] = useState<Store[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -54,6 +55,15 @@ export default function Stores() {
 
   async function handleDeleteStore(id: number) {
     await api.delete(`/stores/${id}`);
+    toast.success("Store deleted.", {
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          await api.post(`/trash/store/${id}/restore`, {}, { suppressGlobalError: true });
+          loadAll();
+        },
+      },
+    });
     loadAll();
   }
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { useMemo } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,6 @@ export function OwnerRow({
   owner, owners, onRenamed, onDelete,
 }: { owner: Owner; owners: Owner[]; onRenamed: () => void; onDelete: (id: number) => void }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
 
   const schema = useMemo(() => buildUniqueNameSchema(owners.map((o) => o.name), owner.name), [owners, owner.name]);
 
@@ -37,17 +37,26 @@ export function OwnerRow({
 
   async function handleRename(values: OwnerNameForm) {
     await api.put(`/owners/${owner.id}`, values);
+    toast.success("Owner renamed.");
     setIsEditing(false);
     onRenamed();
   }
 
   async function handleDelete() {
     try {
-      await api.delete(`/owners/${owner.id}`);
-      setDeleteError("");
+      await api.delete(`/owners/${owner.id}`, { suppressGlobalError: true });
+      toast.success("Owner deleted", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            await api.post(`/trash/owner/${owner.id}/restore`, {}, { suppressGlobalError: true });
+            onDelete(owner.id);
+          },
+        },
+      });
       onDelete(owner.id);
-    } catch {
-      setDeleteError("Still has active stores — reassign first");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message ?? "Failed to delete owner.");
     }
   }
 
@@ -103,7 +112,6 @@ export function OwnerRow({
           </div>
         </div>
       )}
-      {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
     </div>
   );
 }

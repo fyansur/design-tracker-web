@@ -10,7 +10,7 @@ import {
   Palette, CircleCheck, ChevronLeft, ChevronRight, Monitor as MonitorIcon,
   Flame, Clock, TrendingUp,
 } from "lucide-react";
-
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const ACCENT = "#399266";
 
@@ -187,7 +187,7 @@ export default function Monitor() {
             </div>
           </div>
           <Select value={ownerFilter} onValueChange={(v) => v && setOwnerFilter(v)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 bg-card">
               <SelectValue placeholder="All Owners">
                 {ownerFilter === "all" ? "All Owners" : data.owners.find((o) => String(o.id) === ownerFilter)?.name}
               </SelectValue>
@@ -213,26 +213,53 @@ export default function Monitor() {
         <Card className="bg-card">
           <CardHeader><CardTitle className="text-sm">Activity (Last Year)</CardTitle></CardHeader>
           <CardContent>
-            <div
-              className="grid gap-1"
-              style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
-            >
-              {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-1">
-                  {week.map((day) => (
-                    <div
-                      key={day.date}
-                      title={`${day.date}: ${day.count} completed`}
-                      className={`aspect-square ${day.level > 0 ? "animate-[pulse-glow_2s_infinite]" : ""}`}
-                      style={{
-                        backgroundColor: day.level === 0 ? "var(--muted)" : ACCENT,
-                        opacity: day.level === 0 ? 1 : [0.35, 0.55, 0.75, 1][day.level - 1],
-                      }}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            <TooltipProvider delay={100}>
+              <div
+                className="grid gap-1"
+                style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+              >
+                {weeks.map((week, wi) => (
+                  <div key={wi} className="flex flex-col gap-1">
+                    {week.map((day) => (
+                      <Tooltip key={day.date}>
+                        <TooltipTrigger
+                          render={
+                            <div
+                              className={`aspect-square rounded-sm ${day.level > 0 ? "animate-[pulse-glow_2s_infinite]" : ""}`}
+                              style={{
+                                backgroundColor: day.level === 0 ? "var(--muted)" : ACCENT,
+                                opacity: day.level === 0 ? 1 : [0.35, 0.55, 0.75, 1][day.level - 1],
+                              }}
+                            />
+                          }
+                        />
+                        <TooltipContent className="flex flex-col gap-1.5 p-2 justify-start items-stretch">
+                          <div className="flex items-center justify-between gap-3 text-xs">
+                            <span className="text-muted-foreground">
+                              {new Date(day.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                            <span className="font-semibold">{day.count} completed</span>
+                          </div>
+                          {day.stores.length > 0 && (
+                            <div className="flex flex-col gap-1 border-t pt-1.5 justify-start">
+                              {day.stores.map((s) => (
+                                <div key={s.store_name} className="flex items-center justify-between gap-3 text-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: s.color }} />
+                                    <span>{s.store_name}</span>
+                                  </div>
+                                  <span className="text-muted-foreground">{s.count}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
 

@@ -11,6 +11,7 @@ import { Pencil, Tag, Plus, CircleAlert } from "lucide-react";
 import { CategoryRow } from "@/components/category-row";
 import type { Category } from "@/types";
 import { buildUniqueNameSchema, type UniqueNameForm } from "@/lib/validation";
+import { toast } from "sonner";
 
 export function CategoryManagementDialog({
     categories, onChanged,
@@ -36,6 +37,7 @@ export function CategoryManagementDialog({
         setServerError("");
         try {
             await api.post("/categories", values);
+            toast.success(`"${values.name}" added.`);
             form.reset({ name: "" });
             onChanged();
         } catch {

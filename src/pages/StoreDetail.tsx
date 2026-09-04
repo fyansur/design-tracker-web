@@ -15,6 +15,7 @@ import { DailyGoalsList } from "@/components/daily-goals-list";
 import { CampaignsList } from "@/components/campaigns-list";
 import { DesignListSection } from "@/components/design-list-section";
 import { LoadingScreen } from "@/components/loading-screen";
+import { toast } from "sonner";
 
 interface StoreDetailData {
     store: Store;
@@ -43,9 +44,11 @@ export default function StoreDetail() {
     async function handleToggleComplete(design: Design) {
         try {
             await api.put(`/designs/${design.id}`, { isCompleted: !design.isCompleted });
+            toast.success(design.isCompleted ? "Moved back to pending." : "Marked as complete.");
             fetchData();
         } catch {
-            alert("Failed to update status — make sure this design has an owner (via the store).");
+            toast.error("Failed to update status — make sure this design has an owner (via the store).");
+
         }
     }
 
@@ -84,16 +87,43 @@ export default function StoreDetail() {
     }
     async function handleDeleteDailyGoal(dailyGoalId: number) {
         await api.delete(`/daily-goals/${dailyGoalId}`);
+        toast.success("Daily goal deleted.", {
+            action: {
+                label: "Undo",
+                onClick: async () => {
+                    await api.post(`/trash/daily-goal/${dailyGoalId}/restore`, {}, { suppressGlobalError: true });
+                    fetchData();
+                },
+            },
+        });
         fetchData();
     }
 
     async function handleDeleteGoal(goalId: number) {
         await api.delete(`/goals/${goalId}`);
+        toast.success("Campaign deleted.", {
+            action: {
+                label: "Undo",
+                onClick: async () => {
+                    await api.post(`/trash/goal/${goalId}/restore`, {}, { suppressGlobalError: true });
+                    fetchData();
+                },
+            },
+        });
         fetchData();
     }
 
     async function handleDeleteDesign(designId: number) {
         await api.delete(`/designs/${designId}`);
+        toast.success("Design deleted.", {
+            action: {
+                label: "Undo",
+                onClick: async () => {
+                    await api.post(`/trash/design/${designId}/restore`, {}, { suppressGlobalError: true });
+                    fetchData();
+                },
+            },
+        });
         fetchData();
     }
 

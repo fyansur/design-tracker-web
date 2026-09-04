@@ -14,6 +14,7 @@ import Designs from "./pages/Designs";
 import Trash from "./pages/Trash";
 import Settings from "./pages/Settings";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           </BreadcrumbProvider>
         </AuthProvider>
       </BrowserRouter>
+      <Toaster />
     </ThemeProvider>
   );
 }

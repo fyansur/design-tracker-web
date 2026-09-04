@@ -14,6 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Image, Store as StoreIcon, Pencil, Link as LinkIcon, RotateCcw, CircleAlert } from "lucide-react";
 import { buildCreateDesignSchema, CUSTOM_CATEGORY_VALUE, type CreateDesignForm } from "@/lib/validation";
 import { useMemo } from "react";
+import { toast } from "sonner";
+
 
 export function EditDesignDialog({
   design, categories, stores, owners, onUpdated,
@@ -81,6 +83,7 @@ export function EditDesignDialog({
         categoryId: resolvedCategoryId,
         referenceUrl: values.referenceUrl || null,
       });
+      toast.success("Design updated.");
       setOpen(false);
       onUpdated();
     } catch {

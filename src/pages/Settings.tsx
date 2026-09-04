@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
@@ -16,12 +16,17 @@ import { Separator } from "@/components/ui/separator";
 import { User, Mail, Lock, Link2, Copy, Check, RotateCcw, CircleAlert } from "lucide-react";
 import { profileFormSchema, type ProfileForm, changePasswordFormSchema, type ChangePasswordForm } from "@/lib/validation";
 import { LoadingScreen } from "@/components/loading-screen";
+import { toast } from "sonner";
 
 export default function Settings() {
   const { user } = useAuth();
-  const [profileMsg, setProfileMsg] = useState("");
-  const [passwordMsg, setPasswordMsg] = useState("");
   const [monitorToken, setMonitorToken] = useState(user?.monitorToken ?? "");
+
+  useEffect(() => {
+    if (user?.monitorToken) {
+      setMonitorToken(user.monitorToken);
+    }
+  }, [user?.monitorToken]);
   const [copied, setCopied] = useState(false);
   const [regenerateOpen, setRegenerateOpen] = useState(false);
 
@@ -38,25 +43,24 @@ export default function Settings() {
   });
 
   async function onSubmitProfile(values: ProfileForm) {
-    setProfileMsg("");
-    await api.put("/auth/profile", values);
-    setProfileMsg("Profile updated successfully");
+    await api.put("/auth/profile", values, { suppressGlobalError: true });
+    toast.success("Profile updated successfully.");
   }
 
   async function onSubmitPassword(values: ChangePasswordForm) {
-    setPasswordMsg("");
     try {
-      await api.put("/auth/password", values);
-      setPasswordMsg("Password updated successfully");
+      await api.put("/auth/password", values, { suppressGlobalError: true });
+      toast.success("Password updated successfully.");
       passwordForm.reset({ currentPassword: "", newPassword: "" });
     } catch {
-      passwordForm.setError("currentPassword", { type: "server", message: "Current password is incorrect" });
+      passwordForm.setError("currentPassword", { type: "server", message: "Current password is incorrect." });
     }
   }
 
   async function handleRegenerateToken() {
     const res = await api.post<{ monitorToken: string }>("/auth/regenerate-monitor-token");
     setMonitorToken(res.data.monitorToken);
+    toast.success("Monitor link regenerated.");
     setRegenerateOpen(false);
   }
 
@@ -111,8 +115,6 @@ export default function Settings() {
                     </InputGroup>
                   </FieldContent>
                 </Field>
-
-                {profileMsg && <p className="text-sm text-muted-foreground">{profileMsg}</p>}
                 <Button type="submit" className="self-start">Save</Button>
               </form>
             </CardContent>
@@ -165,8 +167,6 @@ export default function Settings() {
                     </Field>
                   )}
                 />
-
-                {passwordMsg && <p className="text-sm text-muted-foreground">{passwordMsg}</p>}
                 <Button type="submit" className="self-start">Change Password</Button>
               </form>
             </CardContent>

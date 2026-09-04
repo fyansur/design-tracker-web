@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Globe, Store as StoreIcon, User, Target, CircleAlert } from "lucide-react";
 import type { Store, Owner } from "@/types";
 import { dailyGoalFormSchema, type DailyGoalFormInput, type DailyGoalFormValues } from "@/lib/validation";
+import { toast } from "sonner";
 
 const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
 
@@ -51,6 +52,7 @@ export function CreateDailyGoalDialog({
         ownerId: values.scope === "OWNER" ? Number(values.ownerId) : undefined,
         targetCount: values.targetCount,
       });
+      toast.success("Daily goal created.");
       setOpen(false);
       onCreated();
     } catch {

@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
 import type { Owner } from "@/types";
@@ -33,6 +34,7 @@ export function CreateOwnerDialog({
   async function onSubmit(values: UniqueNameForm) {
     try {
       await api.post("/owners", values);
+      toast.success(`Owner "${values.name}" added.`);
       setOpen(false);
       onCreated();
     } catch {

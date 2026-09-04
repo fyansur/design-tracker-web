@@ -98,7 +98,7 @@ export default function Trash() {
                   key={t}
                   type="button"
                   onClick={() => setType(t)}
-                  className={`flex flex-col items-center justify-center gap-2 rounded-lg border p-4 transition-colors ${isActive ? "border-primary bg-primary/10" : "hover:bg-muted"
+                  className={`flex flex-col items-center justify-center gap-2 rounded-lg border p-4 transition-colors ${isActive ? "border-primary/10 bg-primary/10" : "hover:bg-muted"
                     }`}
                 >
                   <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-chart-2/10 text-chart-2"
@@ -112,7 +112,7 @@ export default function Trash() {
               );
             })}
           </div>
-          <div className="flex flex-col bg-card p-6 rounded-xl gap-6">
+          <div className="flex flex-col bg-card p-6 rounded-xl gap-6 ring-1 ring-foreground/10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input

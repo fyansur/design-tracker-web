@@ -337,7 +337,7 @@ export default function Designs() {
                     </Card>
 
                     {/* ==== LIST DESIGNS ==== */}
-                    <div className="flex flex-col bg-card p-6 rounded-xl">
+                    <div className="flex flex-col bg-card p-6 rounded-xl ring-1 ring-foreground/10">
                         <DesignListSection
                             title="All Designs"
                             designs={designs}

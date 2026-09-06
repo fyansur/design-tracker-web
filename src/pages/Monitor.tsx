@@ -8,7 +8,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/
 import { Spinner } from "@/components/ui/spinner";
 import {
   Palette, CircleCheck, ChevronLeft, ChevronRight, Monitor as MonitorIcon,
-  Flame, Clock, TrendingUp,
+  Flame, Clock, TrendingUp, ExternalLink
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
@@ -24,7 +24,7 @@ interface MonitorData {
   streak: number;
   calendarData: { date: string; count: number; level: number; stores: { store_name: string; color: string; count: number }[] }[];
   storeBreakdown: { store_name: string; color: string; count: number }[];
-  recentCompletedDesigns: { id: number; name: string; store_name: string; owner_id: number | null; owner_name: string; completed_at: string }[];
+  recentCompletedDesigns: { id: number; name: string; store_name: string; owner_id: number | null; owner_name: string; completed_at: string; reference_url: string | null }[];
   owners: { id: number; name: string }[];
   currentOwnerId: string;
   perPage: number;
@@ -127,7 +127,18 @@ function TaskItem({ d, index }: { d: MonitorData["recentCompletedDesigns"][numbe
           <div className="text-xs text-muted-foreground">{d.store_name} ({d.owner_name})</div>
         </div>
       </div>
-      <div className="text-right text-xs text-muted-foreground">{formatDateTime(d.completed_at)}</div>
+      <div className="flex items-center gap-3">
+        <div className="text-right text-xs text-muted-foreground">{formatDateTime(d.completed_at)}</div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!d.reference_url}
+          onClick={() => d.reference_url && window.open(d.reference_url, "_blank")}
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </Button>
+      </div>
     </div>
   );
 }

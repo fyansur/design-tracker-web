@@ -60,7 +60,7 @@ function StatCard({
   const value = useCountUp(target);
   return (
     <div
-      className="flex items-center justify-between rounded-2xl border p-4.5 transition-all hover:shadow-[0_0_20px_rgba(57,146,102,0.25)] bg-card"
+      className="flex items-center justify-between rounded-2xl ring-1 ring-foreground/10 p-4.5 bg-card"
       style={{ borderColor: "var(--border)" }}
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = ACCENT)}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
@@ -296,7 +296,7 @@ export default function Monitor() {
         </Card>
 
         {/* Store Breakdown */}
-        <div className="rounded-2xl border p-5 bg-card">
+        <div className="rounded-2xl ring-1 ring-foreground/10 p-5 bg-card">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm font-semibold">Store Breakdown</span>
           </div>
@@ -310,7 +310,7 @@ export default function Monitor() {
         </div>
 
         {/* Recently Completed */}
-        <div className="rounded-2xl border p-5 bg-card">
+        <div className="rounded-2xl ring-1 ring-foreground/10 p-5 bg-card">
           <div className="mb-4 text-sm font-semibold">Recently Completed</div>
           {data.recentCompletedDesigns.length === 0 ? (
             <Empty className="py-6">

@@ -37,7 +37,6 @@ function formatDateTime(dateStr: string) {
   });
 }
 
-// Angka naik dari 0 ke target pas mount
 function useCountUp(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -60,11 +59,7 @@ function StatCard({
   const value = useCountUp(target);
   return (
     <div
-      className="flex items-center justify-between rounded-2xl ring-1 ring-foreground/10 p-4.5 bg-card"
-      style={{ borderColor: "var(--border)" }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = ACCENT)}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
-    >
+      className="flex items-center justify-between rounded-2xl ring-1 ring-foreground/10 p-4.5 bg-card">
       <div>
         <div className="mb-1.5 text-xs text-muted-foreground">{label}</div>
         <div className="text-2xl font-bold">{value}{suffix}</div>
@@ -112,7 +107,7 @@ function TaskItem({ d, index }: { d: MonitorData["recentCompletedDesigns"][numbe
 
   return (
     <div
-      className="mb-2.5 flex items-center justify-between rounded-[10px] border bg-muted/50 px-4 py-3.5 transition-all last:mb-0"
+      className="mb-2.5 flex items-center justify-between rounded-[10px] ring-1 ring-foreground/10 bg-muted/50 px-4 py-3.5 transition-all last:mb-0"
       style={{
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(10px)",

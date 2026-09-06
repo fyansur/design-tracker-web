@@ -10,7 +10,7 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import {
     Search, ArrowUp, ArrowDown, ChevronDown, ChevronLeft, ChevronRight, RotateCcw,
-    ExternalLink, Pin, Calendar, Clock, Trash2, X, Target,
+    ExternalLink, Pin, Calendar, Clock, Trash2, X,
 } from "lucide-react";
 import { EditDesignDialog } from "@/components/edit-design-dialog";
 import { AssignStoreDialog } from "@/components/assign-store-dialog";

@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import type { Design, Goal } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Target } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export function AssignGoalPopover({

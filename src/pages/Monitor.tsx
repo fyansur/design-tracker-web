@@ -131,12 +131,11 @@ function TaskItem({ d, index }: { d: MonitorData["recentCompletedDesigns"][numbe
         <div className="text-right text-xs text-muted-foreground">{formatDateTime(d.completed_at)}</div>
         <Button
           variant="outline"
-          size="icon"
-          className="h-8 w-8"
+          className="h-8"
           disabled={!d.reference_url}
           onClick={() => d.reference_url && window.open(d.reference_url, "_blank")}
         >
-          <ExternalLink className="h-3.5 w-3.5" />
+          <ExternalLink className="h-4 w-4" /> See on Etsy
         </Button>
       </div>
     </div>

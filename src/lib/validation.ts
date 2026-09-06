@@ -63,27 +63,50 @@ export type CreateStoreForm = z.infer<ReturnType<typeof buildCreateStoreSchema>>
 
 // ==================== Daily Goal (create dialog) ====================
 
-export const dailyGoalFormSchema = z
-  .object({
-    scope: z.enum(["GLOBAL", "STORE", "OWNER"]),
-    storeId: z.string().optional(),
-    ownerId: z.string().optional(),
-    targetCount: z.coerce
-      .number({ error: "Must be a number" })
-      .int("Must be a whole number")
-      .positive("Must be greater than 0")
-      .max(1000, "Max is 1000"),
-  })
-  .superRefine((data, ctx) => {
-    if (data.scope === "STORE" && !data.storeId) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Store is required", path: ["storeId"] });
-    }
-    if (data.scope === "OWNER" && !data.ownerId) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Owner is required", path: ["ownerId"] });
-    }
-  });
-export type DailyGoalFormInput = z.input<typeof dailyGoalFormSchema>;
-export type DailyGoalFormValues = z.output<typeof dailyGoalFormSchema>;
+export interface ExistingDailyGoal {
+  scope: string;
+  storeId: number | null;
+  ownerId: number | null;
+}
+
+export function buildDailyGoalFormSchema(existingDailyGoals: ExistingDailyGoal[]) {
+  return z
+    .object({
+      scope: z.enum(["GLOBAL", "STORE", "OWNER"]),
+      storeId: z.string().optional(),
+      ownerId: z.string().optional(),
+      targetCount: z.coerce
+        .number({ error: "Must be a number" })
+        .int("Must be a whole number")
+        .positive("Must be greater than 0")
+        .max(1000, "Max is 1000"),
+    })
+    .superRefine((data, ctx) => {
+      if (data.scope === "STORE" && !data.storeId) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Store is required", path: ["storeId"] });
+      }
+      if (data.scope === "OWNER" && !data.ownerId) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Owner is required", path: ["ownerId"] });
+      }
+
+      const targetStoreId = data.scope === "STORE" && data.storeId ? Number(data.storeId) : null;
+      const targetOwnerId = data.scope === "OWNER" && data.ownerId ? Number(data.ownerId) : null;
+
+      const isDuplicate = existingDailyGoals.some((g) => {
+        if (g.scope !== data.scope) return false;
+        if (data.scope === "STORE") return g.storeId === targetStoreId;
+        if (data.scope === "OWNER") return g.ownerId === targetOwnerId;
+        return true; // GLOBAL — cuma boleh 1
+      });
+
+      if (isDuplicate) {
+        const path = data.scope === "STORE" ? "storeId" : data.scope === "OWNER" ? "ownerId" : "scope";
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A daily goal for this scope already exists", path: [path] });
+      }
+    });
+}
+export type DailyGoalFormInput = z.input<ReturnType<typeof buildDailyGoalFormSchema>>;
+export type DailyGoalFormValues = z.output<ReturnType<typeof buildDailyGoalFormSchema>>;
 
 // ==================== Campaign / Goal (create dialog) ====================
 

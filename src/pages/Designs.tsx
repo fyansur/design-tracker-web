@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
-import type { Design, Owner, Store, Category } from "@/types";
+import type { Design, Owner, Store, Category, Goal } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
@@ -29,20 +29,23 @@ export default function Designs() {
     const [designs, setDesigns] = useState<Design[]>([]);
     const [stores, setStores] = useState<Store[]>([]);
     const [owners, setOwners] = useState<Owner[]>([]);
+    const [goals, setGoals] = useState<Goal[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [pendingCompleteDesign, setPendingCompleteDesign] = useState<Design | null>(null);
 
     async function loadAll() {
-        const [designsRes, storesRes, ownersRes, categoriesRes] = await Promise.all([
+        const [designsRes, storesRes, ownersRes, categoriesRes, goalsRes] = await Promise.all([
             api.get<Design[]>("/designs"),
             api.get<Store[]>("/stores"),
             api.get<Owner[]>("/owners"),
             api.get<Category[]>("/categories"),
+            api.get<Goal[]>("/goals"),
         ]);
         setDesigns(designsRes.data);
         setStores(storesRes.data);
         setOwners(ownersRes.data);
         setCategories(categoriesRes.data);
+        setGoals(goalsRes.data);
     }
 
     useEffect(() => {
@@ -356,6 +359,7 @@ export default function Designs() {
                             categories={categories}
                             stores={stores}
                             owners={owners}
+                            goals={goals}
                             onToggleComplete={handleToggleComplete}
                             onTogglePin={handleTogglePinDesign}
                             onDelete={handleDeleteDesign}

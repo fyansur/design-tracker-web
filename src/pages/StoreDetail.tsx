@@ -190,7 +190,7 @@ export default function StoreDetail() {
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between">
                             <span className="text-lg font-semibold text-foreground">Daily Goals</span>
-                            <CreateDailyGoalDialog stores={[]} owners={[]} lockedStoreId={data.store.id} onCreated={fetchData} />
+                            <CreateDailyGoalDialog stores={[]} owners={[]} existingDailyGoals={data.dailyGoalStats} lockedStoreId={data.store.id} onCreated={fetchData} />
                         </div>
                         <DailyGoalsList
                             dailyGoalStats={data.dailyGoalStats}
@@ -224,6 +224,7 @@ export default function StoreDetail() {
                         categories={categories}
                         stores={stores}
                         owners={owners}
+                        goals={data.goals}
                         sortOptions={["date", "name", "category"]}
                         onToggleComplete={handleToggleComplete}
                         onTogglePin={handleTogglePinDesign}

@@ -10,10 +10,15 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import {
     Search, ArrowUp, ArrowDown, ChevronDown, ChevronLeft, ChevronRight, RotateCcw,
-    ExternalLink, Pin, Calendar, Clock, Trash2,
+    ExternalLink, Pin, Calendar, Clock, Trash2, X, Target,
 } from "lucide-react";
 import { EditDesignDialog } from "@/components/edit-design-dialog";
 import { AssignStoreDialog } from "@/components/assign-store-dialog";
+import { Badge } from "@/components/ui/badge";
+import { AssignGoalPopover } from "@/components/assign-goal-popover";
+import type { Goal } from "@/types";
+import { toast } from "sonner";
+import api from "@/lib/api";
 const PAGE_SIZE = 5;
 type SortKey = "date" | "name" | "category" | "store";
 
@@ -30,6 +35,7 @@ export function DesignListSection({
     categories,
     stores,
     owners,
+    goals,
     sortOptions = ["date", "name", "category", "store"],
     onToggleComplete,
     onTogglePin,
@@ -42,6 +48,7 @@ export function DesignListSection({
     sortOptions?: SortKey[];
     stores: Store[];
     owners: Owner[];
+    goals: Goal[];
     onToggleComplete: (design: Design) => void;
     onTogglePin: (id: number) => void;
     onDelete: (id: number) => void;
@@ -53,6 +60,12 @@ export function DesignListSection({
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
     const [page, setPage] = useState(1);
+
+    async function handleRemoveFromGoal(designId: number, goalId: number) {
+        await api.delete(`/designs/${designId}/goals/${goalId}`);
+        toast.success("Removed from campaign");
+        onUpdated();
+    }
 
     useEffect(() => {
         setPage(1);
@@ -230,6 +243,23 @@ export function DesignListSection({
                                     <Button size="sm" onClick={() => onToggleComplete(d)}>Mark as Complete</Button>
                                 )}
                             </div>
+                            {statusTab === "completed" && (
+                                <div className="flex flex-wrap items-center gap-1.5 border-t pt-3">
+                                    {(d.goals ?? []).map((dg) => (
+                                        <Badge key={dg.goal.id} variant="outline" className="h-8 gap-1 rounded-sm items-center px-2 text-xs bg-card">
+                                            {dg.goal.name}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveFromGoal(d.id, dg.goal.id)}
+                                                className="ml-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                    <AssignGoalPopover design={d} goals={goals} onAssigned={onUpdated} />
+                                </div>
+                            )}
                         </div>
                     );
                 })}

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
@@ -9,17 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Globe, Store as StoreIcon, User, Target, CircleAlert } from "lucide-react";
-import type { Store, Owner } from "@/types";
-import { dailyGoalFormSchema, type DailyGoalFormInput, type DailyGoalFormValues } from "@/lib/validation";
+import type { Store, Owner, DailyGoalStat } from "@/types";
+import { buildDailyGoalFormSchema, type DailyGoalFormInput, type DailyGoalFormValues } from "@/lib/validation";
 import { toast } from "sonner";
 
 const SCOPE_LABEL: Record<string, string> = { GLOBAL: "Global", STORE: "Store", OWNER: "Owner" };
 
 export function CreateDailyGoalDialog({
-  stores, owners, onCreated, lockedStoreId, trigger,
-}: { stores: Store[]; owners: Owner[]; onCreated: () => void; lockedStoreId?: number; trigger?: ReactNode }) {
+  stores, owners, existingDailyGoals = [], onCreated, lockedStoreId, trigger,
+}: {
+  stores: Store[]; owners: Owner[]; existingDailyGoals?: DailyGoalStat[];
+  onCreated: () => void; lockedStoreId?: number; trigger?: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
-  const [serverError, setServerError] = useState("");
 
   const defaultValues: DailyGoalFormInput = {
     scope: lockedStoreId ? "STORE" : "GLOBAL",
@@ -28,8 +30,20 @@ export function CreateDailyGoalDialog({
     targetCount: 5,
   };
 
+  const schema = useMemo(
+    () => buildDailyGoalFormSchema(
+      existingDailyGoals.map((g) => ({
+        scope: g.scope,
+        storeId: g.store?.id ?? null,
+        ownerId: g.owner?.id ?? null,
+      }))
+    ),
+    [existingDailyGoals]
+  );
+
   const form = useForm<DailyGoalFormInput, unknown, DailyGoalFormValues>({
-    resolver: zodResolver(dailyGoalFormSchema),
+    resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues,
   });
 
@@ -37,26 +51,23 @@ export function CreateDailyGoalDialog({
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (next) {
-      form.reset(defaultValues);
-      setServerError("");
-    }
+    form.reset(defaultValues);
   }
 
   async function onSubmit(values: DailyGoalFormValues) {
-    setServerError("");
     try {
       await api.post("/daily-goals", {
         scope: values.scope,
         storeId: values.scope === "STORE" ? Number(values.storeId) : undefined,
         ownerId: values.scope === "OWNER" ? Number(values.ownerId) : undefined,
         targetCount: values.targetCount,
-      });
-      toast.success("Daily goal created.");
+      }, { suppressGlobalError: true });
+      toast.success("Daily goal created");
       setOpen(false);
       onCreated();
     } catch {
-      setServerError("A daily goal for this scope already exists");
+      const path = values.scope === "STORE" ? "storeId" : values.scope === "OWNER" ? "ownerId" : "scope";
+      form.setError(path, { type: "server", message: "A daily goal for this scope already exists" });
     }
   }
 
@@ -73,8 +84,6 @@ export function CreateDailyGoalDialog({
       <DialogContent showCloseButton={false}>
         <DialogHeader><DialogTitle>Create Daily Goal</DialogTitle></DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-
           {!lockedStoreId && (
             <Controller
               name="scope"

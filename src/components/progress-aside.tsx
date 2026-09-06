@@ -53,7 +53,7 @@ export function ProgressAside() {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-foreground">Daily Goals</span>
-          <CreateDailyGoalDialog stores={stores} owners={owners} onCreated={load} />
+          <CreateDailyGoalDialog stores={stores} owners={owners} existingDailyGoals={data.dailyGoalStats} onCreated={load} />
         </div>
         <DailyGoalsList
           dailyGoalStats={data.dailyGoalStats}

@@ -198,7 +198,7 @@ export default function Dashboard() {
 
             {/* ==== KOLOM KANAN ==== */}
             <div className="flex flex-col gap-4 md:gap-6">
-              <QuickActionsCard stores={stores} owners={owners} onCreated={refreshAll} />
+              <QuickActionsCard stores={stores} owners={owners} existingDailyGoals={data.dailyGoalStats} onCreated={refreshAll} />
               <DailyGoalsList
                 dailyGoalStats={data.dailyGoalStats}
                 onUpdateTarget={handleUpdateDailyGoalTarget}

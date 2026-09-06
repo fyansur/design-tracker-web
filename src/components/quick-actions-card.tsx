@@ -21,7 +21,7 @@ function ActionTile({ icon: Icon, label }: { icon: any; label: string }) {
     );
 }
 
-export function QuickActionsCard({ stores, owners, onCreated }: { stores: Store[]; owners: Owner[]; onCreated: () => void }) {
+export function QuickActionsCard({ stores, owners, existingDailyGoals, onCreated }: { stores: Store[]; owners: Owner[]; existingDailyGoals: any[]; onCreated: () => void }) {
     const { user } = useAuth();
     const [copied, setCopied] = useState(false);
 
@@ -57,6 +57,7 @@ export function QuickActionsCard({ stores, owners, onCreated }: { stores: Store[
                     <CreateDailyGoalDialog
                         stores={stores}
                         owners={owners}
+                        existingDailyGoals={existingDailyGoals}
                         onCreated={onCreated}
                         trigger={<ActionTile icon={Clock} label="Add Daily Goal" />}
                     />

@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Palette, CircleCheck, ChevronLeft, ChevronRight, Monitor as MonitorIcon,
-  Flame, Clock, TrendingUp, ExternalLink
+  Flame, Clock, TrendingUp, ExternalLink, Store, Send
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { PulsatingButton } from "@/components/ui/pulsating-button";
+
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const ACCENT = "#399266";
 
@@ -87,13 +88,13 @@ function StoreBar({ store, totalAllTime }: { store: { store_name: string; color:
     <div className="flex items-center justify-between border-b py-2.5 last:border-0">
       <div className="flex-1">
         <div className="flex items-center gap-2.5">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: store.color }} />
+          <Store className="h-4 w-4" style={{ color: store.color }} />
           <span className="text-[13px]">{store.store_name}</span>
         </div>
         <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full transition-[width] duration-1000 ease-out"
-            style={{ width: mounted ? `${pct}%` : "0%", backgroundColor: ACCENT }}
+            style={{ width: mounted ? `${pct}%` : "0%", backgroundColor: store.color }}
           />
         </div>
       </div>
@@ -145,18 +146,30 @@ function TaskItem({ d, index }: { d: MonitorData["recentCompletedDesigns"][numbe
 export default function Monitor() {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<MonitorData | null>(null);
-  const [ownerFilter, setOwnerFilter] = useState("all");
+  const [selectedOwnerIds, setSelectedOwnerIds] = useState<number[]>([]);
+  const initializedRef = useRef(false);
   const [page, setPage] = useState(1);
 
+  function toggleOwner(ownerId: number) {
+    setSelectedOwnerIds((prev) =>
+      prev.includes(ownerId) ? prev.filter((id) => id !== ownerId) : [...prev, ownerId]
+    );
+  }
   useEffect(() => {
     axios.get<MonitorData>(`${API_BASE}/monitor/${token}`, {
-      params: { owner_id: ownerFilter, page },
-    }).then((res) => setData(res.data));
-  }, [token, ownerFilter, page]);
+      params: { owner_ids: selectedOwnerIds.join(","), page },
+    }).then((res) => {
+      setData(res.data);
+      if (!initializedRef.current && res.data.owners.length > 0) {
+        setSelectedOwnerIds(res.data.owners.map((o) => o.id));
+        initializedRef.current = true;
+      }
+    });
+  }, [token, selectedOwnerIds, page]);
 
   useEffect(() => {
     setPage(1);
-  }, [ownerFilter]);
+  }, [selectedOwnerIds]);
 
   if (!data) {
     return (
@@ -173,6 +186,7 @@ export default function Monitor() {
   }
   return (
     <div className="min-h-svh bg-background p-4 md:p-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-background [&::-webkit-scrollbar-thumb]:bg-chart-2">
+
       <div className="mx-auto flex max-w-3xl flex-col gap-5">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -196,19 +210,23 @@ export default function Monitor() {
               <span>{data.monitoredUser.isActive ? "Online" : "Offline"}</span>
             </div>
           </div>
-          <Select value={ownerFilter} onValueChange={(v) => v && setOwnerFilter(v)}>
-            <SelectTrigger className="w-40 bg-card">
-              <SelectValue placeholder="All Owners">
-                {ownerFilter === "all" ? "All Owners" : data.owners.find((o) => String(o.id) === ownerFilter)?.name}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Owners</SelectItem>
-              {data.owners.map((o) => (
-                <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Filter by</span>
+            {data.owners.map((o) => {
+              const isActive = selectedOwnerIds.includes(o.id);
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => toggleOwner(o.id)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-transparent text-muted-foreground hover:bg-muted"
+                    }`}
+                >
+                  {o.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Stats */}
@@ -221,7 +239,11 @@ export default function Monitor() {
 
         {/* Heatmap */}
         <Card className="bg-card">
-          <CardHeader><CardTitle className="text-sm">Activity (Last Year)</CardTitle></CardHeader>
+          <CardHeader className="flex items-center justify-between"><CardTitle className="text-sm">Activity</CardTitle>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" /> {data.averagePerDay}/day avg (30d)
+            </span>
+          </CardHeader>
           <CardContent>
             <TooltipProvider delay={100}>
               <div
@@ -277,9 +299,6 @@ export default function Monitor() {
         <div className="rounded-2xl border p-5 bg-card">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm font-semibold">Store Breakdown</span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5" /> {data.averagePerDay}/day avg (30d)
-            </span>
           </div>
           {data.storeBreakdown.length === 0 ? (
             <p className="text-sm text-muted-foreground">No completed designs yet.</p>
@@ -320,6 +339,18 @@ export default function Monitor() {
           </div>
         </div>
       </div>
+      <PulsatingButton
+        variant="ripple"
+        pulseColor="#26A5E4"
+        distance="10px"
+        duration="1s"
+        className="fixed bottom-6 right-6 z-50 gap-2 bg-[#26A5E4] text-white shadow-lg hover:bg-[#1e8fc9]"
+        onClick={() => window.open("https://t.me/fyansur", "_blank")}
+      >
+        <div className="flex items-center gap-2">
+        <Send className="h-4 w-4" />
+        Chat via Telegram</div>
+      </PulsatingButton>
     </div>
   );
 }
